@@ -1,9 +1,14 @@
-import { AuthForm } from "./components/auth/authform";
+import { Routes, Route, Link } from "react-router";
+import { AuthForm } from "./components/auth/authForm";
+import { Dashboard } from "./components/dashboard/dashboard";
 
 function App() {
   return (
     <>
-      <AuthForm />
+      <Routes>
+        <Route path="/" element={<AuthForm />} />
+        <Route path="dashboard" element={<Dashboard />} />
+      </Routes>
     </>
   );
 }

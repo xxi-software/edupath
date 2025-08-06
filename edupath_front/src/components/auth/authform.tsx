@@ -1,4 +1,6 @@
 import { useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router";
 import { Button } from "../../../components/ui/button";
 import { Input } from "../../../components/ui/input";
 import { Label } from "../../../components/ui/label";
@@ -25,15 +27,34 @@ import {
 } from "lucide-react";
 
 export function AuthForm() {
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [registerData, setRegisterData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    role: "",
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmitLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    // Simular llamada a API
-    setTimeout(() => {
+  };
+
+  const handleSubmitRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setIsLoading(true);
+      const response = await axios.post("http://localhost:3000/api/users/createUser", registerData);
+      console.log(response.data);
       setIsLoading(false);
-    }, 2000);
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Error creating user:", error);
+      setError("Error creating user");
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -69,7 +90,7 @@ export function AuthForm() {
 
               {/* Formulario de inicio de sesión */}
               <TabsContent value="login" className="space-y-4">
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmitLogin} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="email">Correo electrónico</Label>
                     <div className="relative">
@@ -116,7 +137,7 @@ export function AuthForm() {
 
               {/* Formulario de registro */}
               <TabsContent value="register" className="space-y-4">
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmitRegister} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="name">Nombre completo</Label>
                     <div className="relative">
@@ -126,6 +147,13 @@ export function AuthForm() {
                         type="text"
                         placeholder="Tu nombre completo"
                         className="pl-10"
+                        value={registerData.name}
+                        onChange={(e) =>
+                          setRegisterData({
+                            ...registerData,
+                            name: e.target.value,
+                          })
+                        }
                         required
                       />
                     </div>
@@ -138,6 +166,13 @@ export function AuthForm() {
                         id="register-email"
                         type="email"
                         placeholder="tu@email.com"
+                        value={registerData.email}
+                        onChange={(e) =>
+                          setRegisterData({
+                            ...registerData,
+                            email: e.target.value,
+                          })
+                        }
                         className="pl-10"
                         required
                       />
@@ -160,7 +195,16 @@ export function AuthForm() {
                         </div>
                         <Input
                           // id="student-role"
-                          type="checkbox"
+                          name="role"
+                          type="radio"
+                          value="student"
+                          checked={registerData.role === "student"}
+                          onChange={(e) =>
+                            setRegisterData({
+                              ...registerData,
+                              role: e.target.value,
+                            })
+                          }
                           className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                         />
                       </label>
@@ -179,7 +223,16 @@ export function AuthForm() {
                         </div>
                         <Input
                           id="teacher-role"
-                          type="checkbox"
+                          name="role"
+                          type="radio"
+                          value="teacher"
+                          checked={registerData.role === "teacher"}
+                          onChange={(e) =>
+                            setRegisterData({
+                              ...registerData,
+                              role: e.target.value,
+                            })
+                          }
                           className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                         />
                       </label>
@@ -193,6 +246,13 @@ export function AuthForm() {
                         id="register-password"
                         type="password"
                         placeholder="Crea una contraseña"
+                        value={registerData.password}
+                        onChange={(e) =>
+                          setRegisterData({
+                            ...registerData,
+                            password: e.target.value,
+                          })
+                        }
                         className="pl-10"
                         required
                       />
@@ -208,6 +268,13 @@ export function AuthForm() {
                         id="confirm-password"
                         type="password"
                         placeholder="Confirma tu contraseña"
+                        value={registerData.confirmPassword}
+                        onChange={(e) =>
+                          setRegisterData({
+                            ...registerData,
+                            confirmPassword: e.target.value,
+                          })
+                        }
                         className="pl-10"
                         required
                       />
