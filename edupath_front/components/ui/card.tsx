@@ -2,6 +2,10 @@ import * as React from "react";
 
 import { cn } from "../../lib/utils";
 
+/**
+ * Contenedor base de tarjeta con estilos por defecto.
+ * Útil para agrupar contenido relacionado.
+ */
 function Card({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -15,6 +19,9 @@ function Card({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
+/**
+ * Encabezado de la tarjeta. Suele contener título, descripción y acciones.
+ */
 function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -28,6 +35,9 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
+/**
+ * Título de la tarjeta. Enfatiza el encabezado principal.
+ */
 function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -38,6 +48,9 @@ function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
+/**
+ * Descripción secundaria dentro del encabezado de la tarjeta.
+ */
 function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -48,6 +61,9 @@ function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
+/**
+ * Contiene acciones del encabezado de la tarjeta (botones, toggles, etc.).
+ */
 function CardAction({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -61,6 +77,9 @@ function CardAction({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
+/**
+ * Sección principal de contenido de la tarjeta.
+ */
 function CardContent({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -71,6 +90,9 @@ function CardContent({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
+/**
+ * Pie de la tarjeta, ideal para acciones o información adicional.
+ */
 function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div

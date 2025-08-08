@@ -3,6 +3,9 @@ import * as LabelPrimitive from "@radix-ui/react-label";
 
 import { cn } from "../../lib/utils";
 
+/**
+ * Etiqueta accesible asociada a campos de formulario.
+ */
 function Label({
   className,
   ...props

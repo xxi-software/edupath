@@ -5,12 +5,19 @@ import { Button } from "../../../components/ui/button";
 import { BookOpen, GraduationCap, Users } from "lucide-react";
 import { mockUser, mockTeacher } from "../../data/users";
 import { Logout } from "../auth/logout";
+/**
+ * Contenedor principal del dashboard que conmuta entre vistas de
+ * Estudiante y Profesor y muestra navegación básica.
+ */
 export function Dashboard() {
   const [currentRole, setCurrentRole] = useState<"student" | "teacher">(
     "student"
   );
   const [currentUser, setCurrentUser] = useState(mockUser);
 
+  /**
+   * Cambia el rol visualizado y sincroniza el usuario actual con datos mock.
+   */
   const handleRoleSwitch = (role: "student" | "teacher") => {
     setCurrentRole(role);
     setCurrentUser(role === "student" ? mockUser : mockTeacher);

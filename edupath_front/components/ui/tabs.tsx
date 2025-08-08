@@ -3,6 +3,9 @@ import * as TabsPrimitive from "@radix-ui/react-tabs";
 
 import { cn } from "../../lib/utils";
 
+/**
+ * Componente raíz de pestañas basado en Radix Tabs.
+ */
 function Tabs({
   className,
   ...props
@@ -16,6 +19,9 @@ function Tabs({
   );
 }
 
+/**
+ * Contenedor de los triggers de pestañas.
+ */
 function TabsList({
   className,
   ...props
@@ -32,6 +38,9 @@ function TabsList({
   );
 }
 
+/**
+ * Disparador de pestaña que cambia el contenido activo.
+ */
 function TabsTrigger({
   className,
   ...props
@@ -48,6 +57,9 @@ function TabsTrigger({
   );
 }
 
+/**
+ * Contenido asociado a un trigger activo.
+ */
 function TabsContent({
   className,
   ...props

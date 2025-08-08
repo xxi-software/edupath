@@ -26,6 +26,12 @@ import {
   UserSearch,
 } from "lucide-react";
 
+/**
+ * Componente de autenticación con pestañas para iniciar sesión y registrarse.
+ * Gestiona estado de carga y errores y redirige al dashboard en caso de éxito.
+ *
+ * @returns {JSX.Element} Interfaz de autenticación.
+ */
 export function AuthForm() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
@@ -38,6 +44,13 @@ export function AuthForm() {
     role: "",
   });
 
+  /**
+   * Envía las credenciales de inicio de sesión al backend, persiste el token
+   * y redirige al dashboard en caso de autenticación exitosa.
+   *
+   * @param {React.FormEvent} e Evento de envío del formulario.
+   * @returns {Promise<void>} Promesa que resuelve cuando finaliza el proceso.
+   */
   const handleSubmitLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -53,8 +66,10 @@ export function AuthForm() {
         { email, password }
       );
       console.log(response.data);
+      // Persistir token para solicitudes autenticadas posteriores
       window.localStorage.setItem("token", response.data.token);
       setIsLoading(false);
+      // Redirigir al dashboard tras autenticación exitosa
       navigate("/dashboard");
     } catch (error) {
       console.error("Error logging in:", error);
@@ -65,6 +80,13 @@ export function AuthForm() {
     }
   };
 
+  /**
+   * Crea un nuevo usuario en el backend con los datos de registro y
+   * redirige al dashboard si la operación es exitosa.
+   *
+   * @param {React.FormEvent} e Evento de envío del formulario.
+   * @returns {Promise<void>} Promesa que resuelve cuando finaliza el proceso.
+   */
   const handleSubmitRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -75,6 +97,7 @@ export function AuthForm() {
       );
       console.log(response.data);
       setIsLoading(false);
+      // Redirigir al dashboard tras registro exitoso
       navigate("/dashboard");
     } catch (error) {
       console.error("Error creating user:", error);
