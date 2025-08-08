@@ -1,13 +1,21 @@
-import { Routes, Route, Link } from "react-router";
-import { AuthForm } from "./components/auth/authForm";
+import { Routes, Route } from "react-router-dom";
+import { AuthForm } from "./components/auth/authform";
 import { Dashboard } from "./components/dashboard/dashboard";
+import { ProtectedRoute } from "./components/auth/protectedRoute";
 
 function App() {
   return (
     <>
       <Routes>
         <Route path="/" element={<AuthForm />} />
-        <Route path="dashboard" element={<Dashboard />} />
+        <Route
+          path="dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </>
   );

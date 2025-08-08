@@ -40,19 +40,45 @@ export function AuthForm() {
 
   const handleSubmitLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const formData = new FormData(e.target as HTMLFormElement);
+      const email = formData.get("email") as string;
+      const password = formData.get("password") as string;
+
+      const response = await axios.post(
+        "http://localhost:3000/api/users/login",
+        { email, password }
+      );
+      console.log(response.data);
+      window.localStorage.setItem("token", response.data.token);
+      setIsLoading(false);
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Error logging in:", error);
+      setError(
+        "Credenciales incorrectas. Por favor, verifica tu email y contraseña."
+      );
+      setIsLoading(false);
+    }
   };
 
   const handleSubmitRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       setIsLoading(true);
-      const response = await axios.post("http://localhost:3000/api/users/createUser", registerData);
+      const response = await axios.post(
+        "http://localhost:3000/api/users/createUser",
+        registerData
+      );
       console.log(response.data);
       setIsLoading(false);
       navigate("/dashboard");
     } catch (error) {
       console.error("Error creating user:", error);
-      setError("Error creating user");
+      setError("Error al crear usuario. Por favor, intenta de nuevo.");
       setIsLoading(false);
     }
   };
@@ -90,6 +116,11 @@ export function AuthForm() {
 
               {/* Formulario de inicio de sesión */}
               <TabsContent value="login" className="space-y-4">
+                {error && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                    {error}
+                  </div>
+                )}
                 <form onSubmit={handleSubmitLogin} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="email">Correo electrónico</Label>
@@ -97,6 +128,7 @@ export function AuthForm() {
                       <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Input
                         id="email"
+                        name="email"
                         type="email"
                         placeholder="tu@email.com"
                         className="pl-10"
@@ -110,6 +142,7 @@ export function AuthForm() {
                       <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Input
                         id="password"
+                        name="password"
                         type="password"
                         placeholder="Tu contraseña"
                         className="pl-10"
@@ -137,6 +170,11 @@ export function AuthForm() {
 
               {/* Formulario de registro */}
               <TabsContent value="register" className="space-y-4">
+                {error && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                    {error}
+                  </div>
+                )}
                 <form onSubmit={handleSubmitRegister} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="name">Nombre completo</Label>
