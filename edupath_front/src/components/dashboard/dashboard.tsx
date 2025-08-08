@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { StudentDashboard } from "./studenDashboard";
+import { StudentDashboard } from "./studentDashboard";
 import { TeacherDashboard } from "./teacherDashboard";
 import { Button } from "../../../components/ui/button";
 import { BookOpen, GraduationCap, Users } from "lucide-react";
