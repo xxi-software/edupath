@@ -1,8 +1,5 @@
 import { type Request, type Response, type NextFunction } from "express";
 import jwt from "jsonwebtoken";
-
-const JWT_SECRET = process.env.JWT_SECRET as string;
-
 interface AuthenticatedRequest extends Request {
   user?: {
     userId: string;
@@ -15,6 +12,7 @@ export const authenticateToken = (
   res: Response,
   next: NextFunction
 ) => {
+  const JWT_SECRET = process.env.JWT_SECRET as string;
   // Obtener el token del encabezado de la solicitud
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) {

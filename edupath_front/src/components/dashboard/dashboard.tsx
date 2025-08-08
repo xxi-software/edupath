@@ -1,26 +1,42 @@
 import { useState } from "react";
-import { StudentDashboard } from "./studentDashboard";
-import { TeacherDashboard } from "./teacherDashboard";
+import { useSelector } from "react-redux";
+import { StudentDashboard } from "./StudentDashboard";
+import { TeacherDashboard } from "./TeacherDashboard";
 import { Button } from "../../../components/ui/button";
 import { BookOpen, GraduationCap, Users } from "lucide-react";
-import { mockUser, mockTeacher } from "../../data/users";
 import { Logout } from "../auth/logout";
+import { selectUser } from "../../store/authSlice";
+import type { UserProgress } from "../../data/types";
 /**
  * Contenedor principal del dashboard que conmuta entre vistas de
  * Estudiante y Profesor y muestra navegación básica.
  */
 export function Dashboard() {
+  const reduxUser = useSelector(selectUser);
   const [currentRole, setCurrentRole] = useState<"student" | "teacher">(
-    "student"
+    reduxUser?.role || "student"
   );
-  const [currentUser, setCurrentUser] = useState(mockUser);
+
+  // Map the Redux user data to the UserProgress type
+  const currentUser: UserProgress = {
+    userId: reduxUser?._id || "default",
+    name: reduxUser?.name || "Usuario",
+    avatar: "👤",
+    level: 1,
+    xp: 0,
+    totalPoints: 0,
+    streakDays: 0,
+    badges: [],
+    completedTopics: [],
+    role: reduxUser?.role || "student",
+  };
 
   /**
-   * Cambia el rol visualizado y sincroniza el usuario actual con datos mock.
+   * Cambia el rol visualizado. En una implementación real, esto podría
+   * depender del rol del usuario en Redux.
    */
   const handleRoleSwitch = (role: "student" | "teacher") => {
     setCurrentRole(role);
-    setCurrentUser(role === "student" ? mockUser : mockTeacher);
   };
 
   return (
@@ -38,32 +54,27 @@ export function Dashboard() {
 
             <div className="flex items-center space-x-4">
               <div className="flex bg-gray-100 rounded-lg p-1">
-                <Button
-                  variant={currentRole === "student" ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => handleRoleSwitch("student")}
-                  className={
-                    currentRole === "student"
-                      ? "bg-green-500 hover:bg-green-600"
-                      : ""
-                  }
-                >
-                  <GraduationCap className="h-4 w-4 mr-2" />
-                  Estudiante
-                </Button>
-                <Button
-                  variant={currentRole === "teacher" ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => handleRoleSwitch("teacher")}
-                  className={
-                    currentRole === "teacher"
-                      ? "bg-green-500 hover:bg-green-600 disabled"
-                      : ""
-                  }
-                >
-                  <Users className="h-4 w-4 mr-2" />
-                  Profesor
-                </Button>
+                {currentRole === "student" ? (
+                  <Button
+                    variant={currentRole === "student" ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => handleRoleSwitch("student")}
+                    className="bg-green-500 hover:bg-green-600"
+                  >
+                    <GraduationCap className="h-4 w-4 mr-2" />
+                    Estudiante
+                  </Button>
+                ) : (
+                  <Button
+                    variant={currentRole === "teacher" ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => handleRoleSwitch("teacher")}
+                    className="bg-green-500 hover:bg-green-600"
+                  >
+                    <Users className="h-4 w-4 mr-2" />
+                    Profesor
+                  </Button>
+                )}
               </div>
 
               <div className="flex items-center space-x-2">

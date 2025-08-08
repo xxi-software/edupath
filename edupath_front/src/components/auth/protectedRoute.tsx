@@ -1,12 +1,14 @@
 import { Navigate } from "react-router";
+import { useSelector } from "react-redux";
+import { selectIsAuthenticated } from "../../store/authSlice";
 
 /**
- * Ruta protegida que requiere un token en localStorage.
- * Si no hay token, redirige a la pantalla de inicio de sesión.
+ * Ruta protegida que requiere un usuario autenticado en el estado de Redux.
+ * Si no hay usuario autenticado, redirige a la pantalla de inicio de sesión.
  */
 export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const token = window.localStorage.getItem("token");
-  if (!token) {
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+  if (!isAuthenticated) {
     return <Navigate to="/" />;
   }
   return children;

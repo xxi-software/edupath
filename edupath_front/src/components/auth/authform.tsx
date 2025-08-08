@@ -1,6 +1,8 @@
 import { useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "../../store";
+import { login as loginAction, register as registerAction } from "../../store/authActions";
 import { Button } from "../../../components/ui/button";
 import { Input } from "../../../components/ui/input";
 import { Label } from "../../../components/ui/label";
@@ -33,6 +35,7 @@ import {
  * @returns {JSX.Element} Interfaz de autenticación.
  */
 export function AuthForm() {
+  const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -61,20 +64,16 @@ export function AuthForm() {
       const email = formData.get("email") as string;
       const password = formData.get("password") as string;
 
-      const response = await axios.post(
-        "http://localhost:3000/api/users/login",
-        { email, password }
-      );
-      console.log(response.data);
-      // Persistir token para solicitudes autenticadas posteriores
-      window.localStorage.setItem("token", response.data.token);
+      // Dispatch the login action
+      await dispatch(loginAction({ email, password })).unwrap();
+      
       setIsLoading(false);
       // Redirigir al dashboard tras autenticación exitosa
       navigate("/dashboard");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error logging in:", error);
       setError(
-        "Credenciales incorrectas. Por favor, verifica tu email y contraseña."
+        error.message || "Credenciales incorrectas. Por favor, verifica tu email y contraseña."
       );
       setIsLoading(false);
     }
@@ -91,17 +90,16 @@ export function AuthForm() {
     e.preventDefault();
     try {
       setIsLoading(true);
-      const response = await axios.post(
-        "http://localhost:3000/api/users/createUser",
-        registerData
-      );
-      console.log(response.data);
+      // Dispatch the register action
+      await dispatch(registerAction(registerData)).unwrap();
+      
       setIsLoading(false);
       // Redirigir al dashboard tras registro exitoso
       navigate("/dashboard");
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error creating user:", error);
-      setError("Error al crear usuario. Por favor, intenta de nuevo.");
+      const apiError = error as { message?: string };
+      setError(apiError.message || "Error al crear usuario. Por favor, intenta de nuevo.");
       setIsLoading(false);
     }
   };

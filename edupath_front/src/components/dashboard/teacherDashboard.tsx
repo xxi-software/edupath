@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/ui/card";
 import { Progress } from "../../../components/ui/progress";
 import { Button } from "../../../components/ui/button";
@@ -5,15 +6,32 @@ import { Users, TrendingUp, Award, BookOpen } from "lucide-react";
 import { type UserProgress } from "../../data/types";
 import { mockStudents } from "../../data/users";
 import { mathTopics } from "../../data/mathTopics";
+import { CreateAssignmentModal } from "./CreateAssignamentModal";
+import { type Assignment, mockAssignments } from "../../data/assignments";
 
 interface TeacherDashboardProps {
   user: UserProgress;
 }
 
 export function TeacherDashboard({ user }: TeacherDashboardProps) {
+  const [assignments, setAssignments] = useState(mockAssignments);
   const averageProgress = Math.round(
     mockStudents.reduce((acc, student) => acc + student.level, 0) / mockStudents.length
   );
+
+  const handleCreateAssignment = (newAssignment: Omit<Assignment, 'id' | 'createdAt' | 'completedBy' | 'teacherId'>) => {
+    const assignment: Assignment = {
+      ...newAssignment,
+      id: `assignment_${Date.now()}`,
+      teacherId: user.userId,
+      createdAt: new Date(),
+      completedBy: []
+    };
+    
+    setAssignments(prev => [...prev, assignment]);
+    // Aquí podrías enviar a una API real
+    console.log("Nueva asignación creada:", assignment);
+  };
   
   const totalActiveStudents = mockStudents.length;
   const studentsWithStreak = mockStudents.filter(s => s.streakDays > 0).length;
@@ -157,9 +175,7 @@ export function TeacherDashboard({ user }: TeacherDashboardProps) {
               </p>
             </div>
             <div className="flex gap-3">
-              <Button variant="outline">
-                Crear Asignación
-              </Button>
+              <CreateAssignmentModal onCreateAssignment={handleCreateAssignment} />
               <Button className="bg-green-500 hover:bg-green-600">
                 Ver Reportes Detallados
               </Button>
