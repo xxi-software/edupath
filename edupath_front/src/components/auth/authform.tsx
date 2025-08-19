@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { useDispatch, useSelector } from "react-redux";
-import type { AppDispatch, RootState } from "../../store";
-import { login as loginAction, register as registerAction } from "../../store/authActions";
+import { useDispatch } from "react-redux";
+import type { AppDispatch } from "../../store";
+import {
+  login as loginAction,
+  register as registerAction,
+} from "../../store/authActions";
 import { Button } from "../../../components/ui/button";
 import { Input } from "../../../components/ui/input";
 import { Label } from "../../../components/ui/label";
@@ -66,14 +69,15 @@ export function AuthForm() {
 
       // Dispatch the login action
       await dispatch(loginAction({ email, password })).unwrap();
-      
+
       setIsLoading(false);
       // Redirigir al dashboard tras autenticación exitosa
       navigate("/dashboard");
     } catch (error: any) {
       console.error("Error logging in:", error);
       setError(
-        error.message || "Credenciales incorrectas. Por favor, verifica tu email y contraseña."
+        error.message ||
+          "Credenciales incorrectas. Por favor, verifica tu email y contraseña."
       );
       setIsLoading(false);
     }
@@ -92,14 +96,17 @@ export function AuthForm() {
       setIsLoading(true);
       // Dispatch the register action
       await dispatch(registerAction(registerData)).unwrap();
-      
+
       setIsLoading(false);
       // Redirigir al dashboard tras registro exitoso
       navigate("/dashboard");
     } catch (error: unknown) {
       console.error("Error creating user:", error);
       const apiError = error as { message?: string };
-      setError(apiError.message || "Error al crear usuario. Por favor, intenta de nuevo.");
+      setError(
+        apiError.message ||
+          "Error al crear usuario. Por favor, intenta de nuevo."
+      );
       setIsLoading(false);
     }
   };

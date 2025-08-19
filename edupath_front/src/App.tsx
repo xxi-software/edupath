@@ -1,6 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import { AuthForm } from "./components/auth/authform";
-import { Dashboard } from "./components/dashboard/Dashboard";
+import { Dashboard } from "./components/dashboard/dashboard";
 import { ProtectedRoute } from "./components/auth/protectedRoute";
 
 function App() {

@@ -1,12 +1,12 @@
-import { createSlice } from '@reduxjs/toolkit';
-import type { PayloadAction } from '@reduxjs/toolkit';
+import { createSlice } from "@reduxjs/toolkit";
+import type { PayloadAction } from "@reduxjs/toolkit";
 
 // Define the User interface based on the backend response
 export interface User {
   _id: string;
   name: string;
   email: string;
-  role: 'student' | 'teacher';
+  role: "student" | "teacher";
   specialization?: string;
   institution?: string;
   profilePicture?: string;
@@ -35,7 +35,7 @@ const initialState: AuthState = {
 
 // Create the auth slice
 export const authSlice = createSlice({
-  name: 'auth',
+  name: "auth",
   initialState,
   reducers: {
     setToken: (state, action: PayloadAction<string>) => {
@@ -45,7 +45,10 @@ export const authSlice = createSlice({
       state.user = action.payload;
       state.isAuthenticated = true;
     },
-    setCredentials: (state, action: PayloadAction<{ token: string; user: User }>) => {
+    setCredentials: (
+      state,
+      action: PayloadAction<{ token: string; user: User }>
+    ) => {
       state.token = action.payload.token;
       state.user = action.payload.user;
       state.isAuthenticated = true;
@@ -64,6 +67,7 @@ export const { setToken, setUser, setCredentials, logout } = authSlice.actions;
 // Export selectors
 export const selectToken = (state: { auth: AuthState }) => state.auth.token;
 export const selectUser = (state: { auth: AuthState }) => state.auth.user;
-export const selectIsAuthenticated = (state: { auth: AuthState }) => state.auth.isAuthenticated;
+export const selectIsAuthenticated = (state: { auth: AuthState }) =>
+  state.auth.isAuthenticated;
 
 export default authSlice.reducer;
