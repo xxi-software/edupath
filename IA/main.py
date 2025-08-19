@@ -1,9 +1,8 @@
 from generateExam import generate_exam
 from Question import ExamenResponse
-from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import List
-from fastapi import UploadFile, File
+from fastapi import FastAPI, UploadFile, File, Form
 
 app = FastAPI(
     title="EduPath API",
@@ -20,6 +19,6 @@ async def root():
 @app.post("/generate_exam", response_model=ExamenResponse)
 async def generate_exam_endpoint(
     file: UploadFile = File(...),
-    questions: int = 5
+    num_questions: int = Form(5)
 ) -> ExamenResponse:
-    return await generate_exam(file, questions)
+    return await generate_exam(file, num_questions)

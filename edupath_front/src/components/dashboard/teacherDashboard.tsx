@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/ui/card";
 import { Progress } from "../../../components/ui/progress";
+import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";
-import { Users, TrendingUp, Award, BookOpen } from "lucide-react";
+import { Users, TrendingUp, Award, BookOpen, ChevronRight, Settings } from "lucide-react";
 import { type UserProgress } from "../../data/types";
 import { mockStudents } from "../../data/users";
 import { mathTopics } from "../../data/mathTopics";
 import { CreateAssignmentModal } from "./CreateAssignamentModal";
 import { type Assignment, mockAssignments } from "../../data/assignments";
+import { AssignmentManager } from "./AssignmentManager";
 
 interface TeacherDashboardProps {
   user: UserProgress;
@@ -15,9 +17,14 @@ interface TeacherDashboardProps {
 
 export function TeacherDashboard({ user }: TeacherDashboardProps) {
   const [assignments, setAssignments] = useState(mockAssignments);
+  const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
+  
   const averageProgress = Math.round(
     mockStudents.reduce((acc, student) => acc + student.level, 0) / mockStudents.length
   );
+  
+  const totalActiveStudents = mockStudents.length;
+  const studentsWithStreak = mockStudents.filter(s => s.streakDays > 0).length;
 
   const handleCreateAssignment = (newAssignment: Omit<Assignment, 'id' | 'createdAt' | 'completedBy' | 'teacherId'>) => {
     const assignment: Assignment = {
@@ -29,12 +36,34 @@ export function TeacherDashboard({ user }: TeacherDashboardProps) {
     };
     
     setAssignments(prev => [...prev, assignment]);
-    // Aquí podrías enviar a una API real
     console.log("Nueva asignación creada:", assignment);
   };
-  
-  const totalActiveStudents = mockStudents.length;
-  const studentsWithStreak = mockStudents.filter(s => s.streakDays > 0).length;
+
+  // Si hay una asignación seleccionada, mostrar el AssignmentManager
+  if (selectedAssignment) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            onClick={() => setSelectedAssignment(null)}
+          >
+            ← Volver al Dashboard
+          </Button>
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <span>Dashboard</span>
+            <ChevronRight className="h-4 w-4" />
+            <span>{selectedAssignment.title}</span>
+          </div>
+        </div>
+        <AssignmentManager 
+          assignment={selectedAssignment}
+          userRole="teacher"
+          userId={user.userId}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -80,8 +109,8 @@ export function TeacherDashboard({ user }: TeacherDashboardProps) {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm opacity-90">Temas Disponibles</p>
-                <p className="text-2xl font-bold">{mathTopics.length}</p>
+                <p className="text-sm opacity-90">Asignaciones Activas</p>
+                <p className="text-2xl font-bold">{assignments.filter(a => a.status === 'published').length}</p>
               </div>
               <BookOpen className="h-8 w-8" />
             </div>
@@ -164,6 +193,108 @@ export function TeacherDashboard({ user }: TeacherDashboardProps) {
         </Card>
       </div>
 
+      {/* Gestión de Asignaciones */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Mis Asignaciones</CardTitle>
+              <CardDescription>
+                Gestiona contenido y lecciones de tus asignaciones
+              </CardDescription>
+            </div>
+            <CreateAssignmentModal onCreateAssignment={handleCreateAssignment} />
+          </div>
+        </CardHeader>
+        <CardContent>
+          {assignments.length === 0 ? (
+            <div className="text-center py-8">
+              <BookOpen className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                No hay asignaciones aún
+              </h3>
+              <p className="text-gray-500 mb-4">
+                Crea tu primera asignación para comenzar a gestionar lecciones
+              </p>
+              <CreateAssignmentModal onCreateAssignment={handleCreateAssignment} />
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {assignments.map((assignment) => {
+                const topic = mathTopics.find(t => t.id === assignment.topicId);
+                const completionRate = (assignment.completedBy.length / assignment.assignedStudents.length) * 100;
+                const isOverdue = assignment.dueDate < new Date();
+                
+                return (
+                  <Card key={assignment.id} className={`hover:shadow-md transition-shadow cursor-pointer ${
+                    isOverdue ? 'border-red-200 bg-red-50' : ''
+                  }`}>
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4 flex-1">
+                          <div className={`p-3 rounded-lg ${topic?.color || 'bg-gray-500'}`}>
+                            <BookOpen className="h-5 w-5 text-white" />
+                          </div>
+                          
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className="font-medium">{assignment.title}</h3>
+                              <Badge variant={assignment.status === 'published' ? 'default' : 'secondary'}>
+                                {assignment.status === 'published' ? 'Publicada' : 'Borrador'}
+                              </Badge>
+                              {isOverdue && (
+                                <Badge variant="destructive">
+                                  Vencida
+                                </Badge>
+                              )}
+                            </div>
+                            
+                            <p className="text-sm text-muted-foreground mb-2">
+                              {assignment.description}
+                            </p>
+                            
+                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                              <span>{topic?.name}</span>
+                              <span>•</span>
+                              <span>{assignment.assignedStudents.length} estudiantes</span>
+                              <span>•</span>
+                              <span>Vence: {assignment.dueDate.toLocaleDateString()}</span>
+                            </div>
+                            
+                            <div className="mt-2">
+                              <div className="flex items-center justify-between text-xs mb-1">
+                                <span>Progreso de estudiantes</span>
+                                <span>{assignment.completedBy.length}/{assignment.assignedStudents.length}</span>
+                              </div>
+                              <Progress value={completionRate} className="h-1" />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <div className="text-right mr-4">
+                            <div className="text-sm font-medium">{assignment.points} pts</div>
+                            <div className="text-xs text-muted-foreground">{assignment.xp} XP</div>
+                          </div>
+                          
+                          <Button
+                            onClick={() => setSelectedAssignment(assignment)}
+                            className="bg-green-500 hover:bg-green-600"
+                          >
+                            <Settings className="h-4 w-4 mr-2" />
+                            Gestionar Lecciones
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Acciones rápidas */}
       <Card>
         <CardContent className="p-6">
@@ -175,7 +306,6 @@ export function TeacherDashboard({ user }: TeacherDashboardProps) {
               </p>
             </div>
             <div className="flex gap-3">
-              <CreateAssignmentModal onCreateAssignment={handleCreateAssignment} />
               <Button className="bg-green-500 hover:bg-green-600">
                 Ver Reportes Detallados
               </Button>
