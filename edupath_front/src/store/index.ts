@@ -2,21 +2,26 @@ import { configureStore } from "@reduxjs/toolkit";
 import { persistReducer, persistStore } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 import authSlice from "./authSlice";
+import usersSlice from "./usersSlice"; // 1. Importar el reducer de usuarios
 
-const persistConfig = {
-  key: "root",
+const authPersistConfig = {
+  key: "auth", // Es buena práctica darle una key única a cada reducer que persistes
   storage,
 };
 
-const persistedReducer = persistReducer(persistConfig, authSlice);
+const persistedAuthReducer = persistReducer(authPersistConfig, authSlice);
 
 export const store = configureStore({
   reducer: {
-    auth: persistedReducer,
+    auth: persistedAuthReducer,
+    users: usersSlice, // 2. Añadir el reducer de usuarios al store
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
-      serializableCheck: false,
+      serializableCheck: {
+        // Ignorar acciones de redux-persist
+        ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE', 'persist/PURGE'],
+      },
     }),
 });
 

@@ -1,4 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { selectFilteredUsers } from "@/store/usersSlice";
+import { fetchUsers } from "@/store/usersActions";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/ui/card";
 import { Progress } from "../../../components/ui/progress";
 import { Badge } from "../../../components/ui/badge";
@@ -10,6 +13,7 @@ import { mathTopics } from "../../data/mathTopics";
 import { CreateAssignmentModal } from "./CreateAssignamentModal";
 import { type Assignment, mockAssignments } from "../../data/assignments";
 import { AssignmentManager } from "./AssignmentManager";
+import type { AppDispatch } from "@/store";
 
 interface TeacherDashboardProps {
   user: UserProgress;
@@ -18,13 +22,19 @@ interface TeacherDashboardProps {
 export function TeacherDashboard({ user }: TeacherDashboardProps) {
   const [assignments, setAssignments] = useState(mockAssignments);
   const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
-  
-  const averageProgress = Math.round(
-    mockStudents.reduce((acc, student) => acc + student.level, 0) / mockStudents.length
-  );
-  
-  const totalActiveStudents = mockStudents.length;
-  const studentsWithStreak = mockStudents.filter(s => s.streakDays > 0).length;
+  const dispatch: AppDispatch = useDispatch();
+  const filteredUsers = useSelector(selectFilteredUsers);
+
+  const averageProgress = filteredUsers.length > 0
+    ? Math.round(filteredUsers.reduce((acc, student) => acc + (student.level || 0), 0) / filteredUsers.length)
+    : 0;
+
+  const totalActiveStudents = filteredUsers.length;
+  const studentsWithStreak = filteredUsers.filter(s => (s.streakDays || 0) > 0).length;
+
+  useEffect(() => {
+      dispatch(fetchUsers());
+  }, [dispatch]);
 
   const handleCreateAssignment = (newAssignment: Omit<Assignment, 'id' | 'createdAt' | 'completedBy' | 'teacherId'>) => {
     const assignment: Assignment = {
@@ -129,21 +139,27 @@ export function TeacherDashboard({ user }: TeacherDashboardProps) {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {mockStudents.map((student) => (
-                <div key={student.userId} className="flex items-center justify-between p-3 rounded-lg border hover:bg-gray-50">
+              {filteredUsers.map((student) => (
+                <div key={student._id} className="flex items-center justify-between p-3 rounded-lg border hover:bg-gray-50">
                   <div className="flex items-center space-x-3">
-                    <span className="text-2xl">{student.avatar}</span>
+                    {student.profilePicture ? (
+                      <img src={student.profilePicture} alt={student.name} className="h-8 w-8 rounded-full" />
+                    ) : (
+                      <span className="text-2xl bg-gray-200 rounded-full w-8 h-8 flex items-center justify-center">
+                        {student.name.charAt(0)}
+                      </span>
+                    )}
                     <div>
                       <p className="font-medium">{student.name}</p>
                       <p className="text-sm text-muted-foreground">
-                        Nivel {student.level} • {student.streakDays} días de racha
+                        
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-medium">{student.xp} XP</p>
+                    <p className="text-sm font-medium">{student.xp || 0} XP</p>
                     <p className="text-xs text-muted-foreground">
-                      {student.badges.length} insignias
+                      
                     </p>
                   </div>
                 </div>
@@ -163,10 +179,10 @@ export function TeacherDashboard({ user }: TeacherDashboardProps) {
           <CardContent>
             <div className="space-y-4">
               {mathTopics.map((topic) => {
-                const completedByStudents = mockStudents.filter(s => 
-                  s.completedTopics.includes(topic.id)
+                const completedByStudents = filteredUsers.filter(s =>
+                  s.completedTopics?.includes(topic.id) || false
                 ).length;
-                const completionRate = (completedByStudents / mockStudents.length) * 100;
+                const completionRate = filteredUsers.length > 0 ? (completedByStudents / filteredUsers.length) * 100 : 0;
                 
                 return (
                   <div key={topic.id} className="space-y-2">
@@ -178,7 +194,7 @@ export function TeacherDashboard({ user }: TeacherDashboardProps) {
                         <span className="font-medium">{topic.name}</span>
                       </div>
                       <span className="text-sm text-muted-foreground">
-                        {completedByStudents}/{mockStudents.length} completado
+                        {completedByStudents}/{filteredUsers.length} completado
                       </span>
                     </div>
                     <Progress value={completionRate} className="h-2" />

@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 import { connectToDatabase } from '../db/connection';
 import router from './routes/userR';
+import listUsersRouter from './routes/listUsers';
 import cors from 'cors';
 
 const port = process.env.PORT || 3000;
@@ -20,6 +21,8 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 app.use('/api/users', router);
+
+app.use("/api/users", listUsersRouter);
 
 async function startServer() {
   try {
