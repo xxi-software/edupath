@@ -22,8 +22,8 @@ type Status = "draft" | "published";
 interface FormDataState {
   title: string;
   description: string;
-  topicId: string;
-  subtopicIds: string[];
+  mainTheme: string;
+  subtopicThemes: string[];
   assignedStudents: string[];
   dueDate: string;
   points: number;
@@ -38,7 +38,9 @@ interface CreateAssignmentModalProps {
 
 export function CreateAssignmentModal({ onCreateAssignment }: CreateAssignmentModalProps) {
   const dispatch: AppDispatch = useDispatch();
-  
+  const [newSubtopic, setNewSubtopic] = useState("");
+  const [customSubtopics, setCustomSubtopics] = useState<string[]>([]);
+
   // 2. Establecer el filtro para mostrar solo estudiantes en este componente.
   useState(() => {
     dispatch(setFilter({ role: 'student' }));
@@ -53,8 +55,8 @@ export function CreateAssignmentModal({ onCreateAssignment }: CreateAssignmentMo
   const [formData, setFormData] = useState<FormDataState>({
     title: "",
     description: "",
-    topicId: "",
-    subtopicIds: [],
+    mainTheme: "",
+    subtopicThemes: [],
     assignedStudents: [],
     dueDate: "",
     points: 50,
@@ -62,23 +64,6 @@ export function CreateAssignmentModal({ onCreateAssignment }: CreateAssignmentMo
     difficulty: "medium",
     status: "draft"
   });
-
-  const selectedTopic = mathTopics.find(topic => topic.id === formData.topicId);
-  const availableSubtopics = selectedTopic?.subtopics || [];
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.title || !formData.topicId || formData.assignedStudents.length === 0) {
-      alert("Por favor completa todos los campos requeridos");
-      return;
-    }
-    const newAssignment = {
-      ...formData,
-      dueDate: new Date(formData.dueDate)
-    };
-    onCreateAssignment(newAssignment);
-    setOpen(false); // Cierra el modal al crear
-  };
 
   const handleStudentSelection = (studentId: string, checked: boolean) => {
     setFormData(prev => ({
@@ -88,21 +73,42 @@ export function CreateAssignmentModal({ onCreateAssignment }: CreateAssignmentMo
         : prev.assignedStudents.filter(id => id !== studentId)
     }));
   };
-  
-  const handleSubtopicSelection = (subtopicId: string, checked: boolean) => {
+
+  const handleAddSubtopic = () => {
+    if (newSubtopic.trim() === "") return;
+    setCustomSubtopics(prev => [...prev, newSubtopic.trim()]);
     setFormData(prev => ({
       ...prev,
-      subtopicIds: checked
-        ? [...prev.subtopicIds, subtopicId]
-        : prev.subtopicIds.filter(id => id !== subtopicId)
+      subtopicThemes: [...prev.subtopicThemes, newSubtopic.trim()]
     }));
+    setNewSubtopic("");
   };
 
   const handleSave = (status: Status) => {
-    setFormData(prev => ({ ...prev, status }));
-    // Forzamos la validación y el envío del formulario
-    const form = document.getElementById("assignment-form") as HTMLFormElement;
-    form.requestSubmit();
+    console.log(formData);
+    if (!formData.title || !formData.mainTheme || formData.assignedStudents.length === 0) {
+      alert("Por favor completa todos los campos requeridos");
+      return;
+    }
+    const newAssignment = {
+      ...formData,
+      status,
+      dueDate: new Date(formData.dueDate)
+    };
+    onCreateAssignment(newAssignment);
+    setOpen(false);
+    setFormData({
+      title: "",
+      description: "",
+      mainTheme: "",
+      subtopicThemes: [],
+      assignedStudents: [],
+      dueDate: "",
+      points: 50,
+      xp: 100,
+      difficulty: "medium",
+      status: "draft"
+    });
   }
 
   return (
@@ -121,7 +127,7 @@ export function CreateAssignmentModal({ onCreateAssignment }: CreateAssignmentMo
           </DialogTitle>
         </DialogHeader>
 
-        <form id="assignment-form" onSubmit={handleSubmit} className="space-y-6">
+        <form id="assignment-form" className="space-y-6">
           <div className="grid grid-cols-1 gap-6">
             <Card>
               <CardHeader><CardTitle className="text-lg">Información Básica</CardTitle></CardHeader>
@@ -160,25 +166,29 @@ export function CreateAssignmentModal({ onCreateAssignment }: CreateAssignmentMo
                   <CardContent className="space-y-4">
                     <div className="space-y-2">
                       <Label>Tema Principal *</Label>
-                      <Select value={formData.topicId} onValueChange={(value) => setFormData(prev => ({ ...prev, topicId: value, subtopicIds: [] }))}>
-                        <SelectTrigger><SelectValue placeholder="Selecciona un tema" /></SelectTrigger>
-                        <SelectContent>
-                          {mathTopics.map((topic) => (
-                            <SelectItem key={topic.id} value={topic.id}><div className="flex items-center gap-2"><div className={`w-3 h-3 rounded-full ${topic.color}`}></div>{topic.name}</div></SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <Input value={formData.mainTheme} onChange={(e) => setFormData(prev => ({ ...prev, mainTheme: e.target.value }))} placeholder="ej: Números" required />
                     </div>
-                    {selectedTopic && (
+                    {formData.mainTheme && (
                       <div className="space-y-2">
-                        <Label>Subtemas (Opcional)</Label>
-                        <div className="space-y-2 max-h-32 overflow-y-auto">
-                          {availableSubtopics.map((subtopic) => (
-                            <div key={subtopic.id} className="flex items-center space-x-2">
-                              <Checkbox id={`subtopic-${subtopic.id}`} checked={formData.subtopicIds.includes(subtopic.id)} onCheckedChange={(checked) => handleSubtopicSelection(subtopic.id, checked as boolean)} disabled={!subtopic.unlocked} />
-                              <Label htmlFor={`subtopic-${subtopic.id}`} className={`text-sm ${!subtopic.unlocked ? 'text-gray-400' : ''}`}>{subtopic.name}{!subtopic.unlocked && " (Bloqueado)"}</Label>
+                        <Label>Subtemas</Label>
+                        <div className="space-y-1 max-h-32 overflow-y-auto border p-2 rounded">                          
+                          {customSubtopics.map((sub, index) => (
+                            <div key={index} className="flex items-center space-x-2">
+                              <Checkbox id={`subtopic-${index}`} checked={formData.subtopicThemes.includes(sub)} onCheckedChange={(checked) => {
+                                setFormData(prev => ({
+                                  ...prev,
+                                  subtopicThemes: checked
+                                    ? [...prev.subtopicThemes, sub]
+                                    : prev.subtopicThemes.filter(name => name !== sub)
+                                }));
+                              }} />
+                              <Label htmlFor={`subtopic-${index}`} className="cursor-pointer">{sub}</Label>
                             </div>
                           ))}
+                        </div>
+                        <div className="flex space-x-2">
+                          <Input placeholder="Nuevo subtema" value={newSubtopic} onChange={(e) => setNewSubtopic(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddSubtopic(); }}} />
+                          <Button type="button" onClick={handleAddSubtopic}>Agregar</Button>
                         </div>
                       </div>
                     )}

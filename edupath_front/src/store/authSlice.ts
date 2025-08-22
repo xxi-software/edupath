@@ -11,6 +11,8 @@ export interface User {
   institution?: string;
   profilePicture?: string;
   bio?: string;
+  experience?: number;
+  streakDays?: number;
   isActive: boolean;
   lastLogin: string | null;
   groups: string[];

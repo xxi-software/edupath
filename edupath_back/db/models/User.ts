@@ -10,6 +10,8 @@ export interface IUser extends mongoose.Document {
   institution?: string;
   profilePicture?: string;
   bio?: string;
+  experience?: number;
+  streakDays?: number;
   isActive?: boolean;
   lastLogin?: Date;
   resetPasswordToken?: string;
@@ -30,6 +32,8 @@ const userSchema = new mongoose.Schema<IUser>({
   institution: { type: String, default: "" },
   profilePicture: { type: String, default: "" },
   bio: { type: String, default: "" },
+  experience: { type: Number, default: 0 },
+  streakDays: { type: Number, default: 0 },
   isActive: { type: Boolean, default: true },
   lastLogin: { type: Date, default: null },
   resetPasswordToken: { type: String, default: "" },

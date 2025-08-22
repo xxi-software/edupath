@@ -1,22 +1,22 @@
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { selectFilteredUsers } from "@/store/usersSlice";
+import { selectFilteredUsers, setSearchTerm } from "@/store/usersSlice";
 import { fetchUsers } from "@/store/usersActions";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/ui/card";
+import { Input } from "../../../components/ui/input";
 import { Progress } from "../../../components/ui/progress";
 import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";
 import { Users, TrendingUp, Award, BookOpen, ChevronRight, Settings } from "lucide-react";
-import { type UserProgress } from "../../data/types";
-import { mockStudents } from "../../data/users";
 import { mathTopics } from "../../data/mathTopics";
 import { CreateAssignmentModal } from "./CreateAssignamentModal";
 import { type Assignment, mockAssignments } from "../../data/assignments";
 import { AssignmentManager } from "./AssignmentManager";
-import type { AppDispatch } from "@/store";
+import type { AppDispatch, RootState } from "@/store";
+import type { User } from "@/store/authSlice";
 
 interface TeacherDashboardProps {
-  user: UserProgress;
+  user: User;
 }
 
 export function TeacherDashboard({ user }: TeacherDashboardProps) {
@@ -24,9 +24,10 @@ export function TeacherDashboard({ user }: TeacherDashboardProps) {
   const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
   const dispatch: AppDispatch = useDispatch();
   const filteredUsers = useSelector(selectFilteredUsers);
+  const searchTerm = useSelector((state: RootState) => state.users.searchTerm);
 
   const averageProgress = filteredUsers.length > 0
-    ? Math.round(filteredUsers.reduce((acc, student) => acc + (student.level || 0), 0) / filteredUsers.length)
+    ? Math.round(filteredUsers.reduce((acc, student) => acc + (student.experience || 0), 0) / filteredUsers.length)
     : 0;
 
   const totalActiveStudents = filteredUsers.length;
@@ -40,7 +41,7 @@ export function TeacherDashboard({ user }: TeacherDashboardProps) {
     const assignment: Assignment = {
       ...newAssignment,
       id: `assignment_${Date.now()}`,
-      teacherId: user.userId,
+      teacherId: user._id,
       createdAt: new Date(),
       completedBy: []
     };
@@ -69,7 +70,7 @@ export function TeacherDashboard({ user }: TeacherDashboardProps) {
         <AssignmentManager 
           assignment={selectedAssignment}
           userRole="teacher"
-          userId={user.userId}
+          userId={user._id}
         />
       </div>
     );
@@ -133,6 +134,7 @@ export function TeacherDashboard({ user }: TeacherDashboardProps) {
         <Card>
           <CardHeader>
             <CardTitle>Progreso de Estudiantes</CardTitle>
+            <Input className="mt-2" placeholder="Buscar estudiantes por email..." value={searchTerm} onChange={(e) => dispatch(setSearchTerm(e.target.value))} />
             <CardDescription>
               Seguimiento individual del rendimiento
             </CardDescription>
@@ -151,15 +153,14 @@ export function TeacherDashboard({ user }: TeacherDashboardProps) {
                     )}
                     <div>
                       <p className="font-medium">{student.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        
-                      </p>
+                      <p className="text-sm text-muted-foreground"></p>
+                      <p className="text-xs text-muted-foreground">{student.email}</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-medium">{student.xp || 0} XP</p>
+                    <p className="text-sm font-medium">{student.experience || 0} XP</p>
                     <p className="text-xs text-muted-foreground">
-                      
+                      Racha de {student.streakDays || 0} días
                     </p>
                   </div>
                 </div>
