@@ -5,6 +5,7 @@ import { connectToDatabase } from '../db/connection';
 import router from './routes/userR';
 import listUsersRouter from './routes/listUsers';
 import cors from 'cors';
+import routerGroup from './routes/crudGroup';
 
 const port = process.env.PORT || 3000;
 const url = process.env.MONGODB_URL_CLUSTER;
@@ -23,6 +24,8 @@ app.get('/', (req: Request, res: Response) => {
 app.use('/api/users', router);
 
 app.use("/api/users", listUsersRouter);
+
+app.use('/api/group', routerGroup)
 
 async function startServer() {
   try {

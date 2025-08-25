@@ -12,8 +12,9 @@ import { Checkbox } from "../../../components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../../components/ui/card";
 import { Badge } from "../../../components/ui/badge";
 import { Calendar, Users, BookOpen, Plus } from "lucide-react";
-import { mathTopics } from "../../data/mathTopics";
 import { type Assignment } from "../../data/assignments";
+import { selectUser, type User } from "@/store/authSlice";
+import axios from "axios";
 
 // 1. Definir una interfaz para el estado del formulario para un tipado robusto.
 type Difficulty = "easy" | "medium" | "hard";
@@ -27,16 +28,17 @@ interface FormDataState {
   assignedStudents: string[];
   dueDate: string;
   points: number;
-  xp: number;
+  experience: number;
   difficulty: Difficulty;
   status: Status;
 }
 
 interface CreateAssignmentModalProps {
-  onCreateAssignment: (assignment: Omit<Assignment, 'id' | 'createdAt' | 'completedBy' | 'teacherId'>) => void;
+  onCreateAssignment: (assignment: Omit<Assignment, | 'createdAt' | 'completedBy' | 'teacherId'>) => void;
 }
 
 export function CreateAssignmentModal({ onCreateAssignment }: CreateAssignmentModalProps) {
+  const currentUser = useSelector(selectUser) as User;
   const dispatch: AppDispatch = useDispatch();
   const [newSubtopic, setNewSubtopic] = useState("");
   const [customSubtopics, setCustomSubtopics] = useState<string[]>([]);
@@ -60,7 +62,7 @@ export function CreateAssignmentModal({ onCreateAssignment }: CreateAssignmentMo
     assignedStudents: [],
     dueDate: "",
     points: 50,
-    xp: 100,
+    experience: 100,
     difficulty: "medium",
     status: "draft"
   });
@@ -85,16 +87,17 @@ export function CreateAssignmentModal({ onCreateAssignment }: CreateAssignmentMo
   };
 
   const handleSave = (status: Status) => {
-    console.log(formData);
     if (!formData.title || !formData.mainTheme || formData.assignedStudents.length === 0) {
       alert("Por favor completa todos los campos requeridos");
       return;
     }
     const newAssignment = {
       ...formData,
+      teacherId: currentUser._id,
       status,
       dueDate: new Date(formData.dueDate)
     };
+    console.log(currentUser._id);
     onCreateAssignment(newAssignment);
     setOpen(false);
     setFormData({
@@ -105,7 +108,7 @@ export function CreateAssignmentModal({ onCreateAssignment }: CreateAssignmentMo
       assignedStudents: [],
       dueDate: "",
       points: 50,
-      xp: 100,
+      experience: 100,
       difficulty: "medium",
       status: "draft"
     });

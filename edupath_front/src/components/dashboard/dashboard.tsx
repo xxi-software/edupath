@@ -5,31 +5,16 @@ import { TeacherDashboard } from "./teacherDashboard";
 import { Button } from "../../../components/ui/button";
 import { BookOpen, GraduationCap, Users } from "lucide-react";
 import { Logout } from "../auth/logout";
-import { selectUser } from "../../store/authSlice";
-import type { UserProgress } from "../../data/types";
+import { selectUser, type User } from "../../store/authSlice";
 /**
  * Contenedor principal del dashboard que conmuta entre vistas de
  * Estudiante y Profesor y muestra navegación básica.
  */
 export function Dashboard() {
-  const reduxUser = useSelector(selectUser);
+  const currentUser = useSelector(selectUser) as User;
   const [currentRole, setCurrentRole] = useState<"student" | "teacher">(
-    reduxUser?.role || "student"
+    currentUser?.role || "student"
   );
-
-  // Map the Redux user data to the UserProgress type
-  const currentUser: UserProgress = {
-    userId: reduxUser?._id || "default",
-    name: reduxUser?.name || "Usuario",
-    avatar: "👤",
-    level: 1,
-    xp: 0,
-    totalPoints: 0,
-    streakDays: 0,
-    badges: [],
-    completedTopics: [],
-    role: reduxUser?.role || "student",
-  };
 
   /**
    * Cambia el rol visualizado. En una implementación real, esto podría
@@ -78,7 +63,7 @@ export function Dashboard() {
               </div>
 
               <div className="flex items-center space-x-2">
-                <span className="text-2xl">{currentUser.avatar}</span>
+                <span className="text-2xl"></span>
                 <span className="font-medium text-gray-900">
                   {currentUser.name}
                 </span>

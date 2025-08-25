@@ -119,7 +119,7 @@ export function StudentDashboard({ user }: StudentDashboardProps) {
           <CardHeader>
             <CardTitle>Insignias</CardTitle>
             <CardDescription>
-              {user.badges.length} de {availableBadges.length} desbloqueadas
+              Insignias que has desbloqueado
             </CardDescription>
           </CardHeader>
           <CardContent>

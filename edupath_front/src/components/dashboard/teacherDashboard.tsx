@@ -37,15 +37,14 @@ export function TeacherDashboard({ user }: TeacherDashboardProps) {
       dispatch(fetchUsers());
   }, [dispatch]);
 
-  const handleCreateAssignment = (newAssignment: Omit<Assignment, 'id' | 'createdAt' | 'completedBy' | 'teacherId'>) => {
+  const handleCreateAssignment = (newAssignment: Omit<Assignment, | 'createdAt' | 'completedBy' | 'teacherId'>) => {
     const assignment: Assignment = {
       ...newAssignment,
-      id: `assignment_${Date.now()}`,
       teacherId: user._id,
       createdAt: new Date(),
       completedBy: []
     };
-    
+
     setAssignments(prev => [...prev, assignment]);
     console.log("Nueva asignación creada:", assignment);
   };
