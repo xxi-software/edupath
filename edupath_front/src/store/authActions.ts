@@ -1,6 +1,6 @@
-import { createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
-import { setCredentials, logout as logoutSlice } from './authSlice';
+import { createAsyncThunk } from "@reduxjs/toolkit";
+import axios from "axios";
+import { setCredentials, logout as logoutSlice } from "./authSlice";
 
 // Define the login credentials interface
 interface LoginCredentials {
@@ -26,19 +26,19 @@ interface ApiError {
 
 // Async action for logging in
 export const login = createAsyncThunk(
-  'auth/login',
+  "auth/login",
   async (credentials: LoginCredentials, { dispatch }) => {
     try {
       const response = await axios.post(
-        'http://localhost:3000/api/users/login',
+        "http://localhost:3000/api/users/login",
         credentials
       );
-      
+
       const { token, user } = response.data;
-      
+
       // Dispatch the setCredentials action to update the store
       dispatch(setCredentials({ token, user }));
-      
+
       // Return the data for the fulfilled case
       return { token, user };
     } catch (error: unknown) {
@@ -47,26 +47,26 @@ export const login = createAsyncThunk(
       if (apiError.response && apiError.response.data) {
         throw new Error(apiError.response.data);
       }
-      throw new Error('An error occurred during login');
+      throw new Error("An error occurred during login");
     }
   }
 );
 
 // Async action for registering a new user
 export const register = createAsyncThunk(
-  'auth/register',
+  "auth/register",
   async (userData: RegisterData, { dispatch }) => {
     try {
       const response = await axios.post(
-        'http://localhost:3000/api/users/createUser',
+        "http://localhost:3000/api/users/createUser",
         userData
       );
-      
+
       const { token, user } = response.data;
-      
+
       // Dispatch the setCredentials action to update the store
       dispatch(setCredentials({ token, user }));
-      
+
       // Return the data for the fulfilled case
       return { token, user };
     } catch (error: unknown) {
@@ -75,19 +75,19 @@ export const register = createAsyncThunk(
       if (apiError.response && apiError.response.data) {
         throw new Error(apiError.response.data);
       }
-      throw new Error('An error occurred during registration');
+      throw new Error("An error occurred during registration");
     }
   }
 );
 
 // Async action for logging out
 export const logout = createAsyncThunk(
-  'auth/logout',
+  "auth/logout",
   async (_, { dispatch }) => {
     // Dispatch the logout action from the slice
     dispatch(logoutSlice());
-    
+
     // Return a success message
-    return 'Logged out successfully';
+    return "Logged out successfully";
   }
 );

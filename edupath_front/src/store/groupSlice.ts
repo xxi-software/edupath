@@ -2,24 +2,22 @@ import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { fetchGroups, createGroup } from "./groupActions";
 
-export interface Group{
-  id: string;
-  name: string;
-  teacher: string;
+export interface Group {
+  title: string;
+  teacherId: string;
   description: string;
   difficulty: "easy" | "medium" | "hard";
   assignedStudents: string[];
   completeBy: string[];
   experience: number;
   mainTheme: string;
-  point: number;
+  points: number;
   status: "published" | "draft";
   subtopicsThemes: string[];
   createdAt: Date;
   updatedAt: Date;
   dueDate: Date;
 }
-
 
 interface GroupState {
   groups: Group[];
@@ -32,21 +30,10 @@ const groupSlice = createSlice({
   initialState: {
     groups: [],
     loading: false,
-    error: null
+    error: null,
   } as GroupState,
   reducers: {
-    fetchGroupsStart(state) {
-      state.loading = true;
-      state.error = null;
-    },
-    fetchGroupsSuccess(state, action: PayloadAction<Group[]>) {
-      state.loading = false;
-      state.groups = action.payload;
-    },
-    fetchGroupsFailure(state, action: PayloadAction<string>) {
-      state.loading = false;
-      state.error = action.payload;
-    }
+    // You can add synchronous reducers here if needed
   },
   extraReducers: (builder) => {
     builder
@@ -60,7 +47,8 @@ const groupSlice = createSlice({
       })
       .addCase(fetchGroups.rejected, (state, action) => {
         state.loading = false;
-        state.error = typeof action.payload === "string" ? action.payload : "Unknown error";
+        state.error =
+          typeof action.payload === "string" ? action.payload : "Unknown error";
       });
     builder
       .addCase(createGroup.pending, (state) => {
@@ -73,9 +61,10 @@ const groupSlice = createSlice({
       })
       .addCase(createGroup.rejected, (state, action) => {
         state.loading = false;
-        state.error = typeof action.payload === "string" ? action.payload : "Unknown error";
+        state.error =
+          typeof action.payload === "string" ? action.payload : "Unknown error";
       });
-  }
-})
+  },
+});
 
 export default groupSlice.reducer;
