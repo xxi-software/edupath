@@ -20,14 +20,13 @@ import {
   BookOpen,
   ChevronRight,
   Settings,
+  Trash2,
 } from "lucide-react";
-import { mathTopics } from "../../data/mathTopics";
 import { CreateAssignmentModal } from "./CreateAssignamentModal";
-import { type Assignment, mockAssignments } from "../../data/assignments";
 import { AssignmentManager } from "./AssignmentManager";
 import type { AppDispatch, RootState } from "@/store";
 import type { User } from "@/store/authSlice";
-import { createGroup } from "@/store/groupActions";
+import { createGroup, deleteGroup, fetchGroups } from "@/store/groupActions";
 import type { Group } from "@/store/groupSlice";
 
 interface TeacherDashboardProps {
@@ -35,13 +34,13 @@ interface TeacherDashboardProps {
 }
 
 export function TeacherDashboard({ user }: TeacherDashboardProps) {
-  const [assignments, setAssignments] = useState(mockAssignments);
-  const [selectedAssignment, setSelectedAssignment] =
-    useState<Assignment | null>(null);
+  const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
   const dispatch: AppDispatch = useDispatch();
-  const filteredUsers = useSelector(selectFilteredUsers);
-  const groups = useSelector((state: RootState) => state.groups.groups);
-  const searchTerm = useSelector((state: RootState) => state.users.searchTerm);
+  const filteredUsers = useSelector(selectFilteredUsers) as User[];
+  const searchTerm = useSelector((state: RootState) => state.users.searchTerm) as string;
+  const loading = useSelector((state: RootState) => state.groups.loading);
+
+  const groups = useSelector((state: RootState) => state.groups.groups) as Group[] || [];
 
   const averageProgress =
     filteredUsers.length > 0
@@ -58,30 +57,36 @@ export function TeacherDashboard({ user }: TeacherDashboardProps) {
     (s) => (s.streakDays || 0) > 0
   ).length;
 
+  const handleDeleteGroup = (id: string) => {
+    dispatch(deleteGroup(id))
+    dispatch(fetchGroups());
+  }
+
   useEffect(() => {
+    dispatch(fetchGroups());
     dispatch(fetchUsers());
   }, [dispatch]);
 
   const handleCreateAssignment = async (
-    newAssignment: Omit<Assignment, "createdAt" | "published" | "teacherId">
+    newAssignment: Omit<Group, "createdAt" | "completedBy" | "teacherId">
   ) => {
-    const groupData: Group = {
+    const groupData = {
       title: newAssignment.title,
       teacherId: user._id,
       description: newAssignment.description,
       difficulty: newAssignment.difficulty || "medium",
       assignedStudents: newAssignment.assignedStudents || [],
-      completeBy: [],
-      experience: newAssignment.xp || 0,
-      mainTheme: newAssignment.topicId || "default-topic",
+      completedBy: [],
+      experience: newAssignment.experience || 0,
+      mainTheme: newAssignment.mainTheme || "default-topic",
       points: newAssignment.points || 0,
       status:
         newAssignment.status === "completed"
           ? "published"
           : newAssignment.status || "draft",
-      subtopicsThemes: [],
+      subtopicThemes: [],
       dueDate: newAssignment.dueDate,
-    };
+    } as unknown as Group;
 
     try {
       await dispatch(createGroup(groupData)).unwrap();
@@ -93,22 +98,22 @@ export function TeacherDashboard({ user }: TeacherDashboardProps) {
     }
   };
 
-  // Si hay una asignación seleccionada, mostrar el AssignmentManager
-  if (selectedAssignment) {
+  // Si hay un grupo seleccionado, mostrar el GroupManager
+  if (selectedGroup) {
     return (
       <div className="space-y-4">
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => setSelectedAssignment(null)}>
+          <Button variant="outline" onClick={() => setSelectedGroup(null)}>
             ← Volver al Dashboard
           </Button>
           <div className="flex items-center gap-2 text-muted-foreground">
             <span>Dashboard</span>
             <ChevronRight className="h-4 w-4" />
-            <span>{selectedAssignment.title}</span>
+            <span>{selectedGroup.title}</span>
           </div>
         </div>
         <AssignmentManager
-          assignment={selectedAssignment}
+          group={selectedGroup}
           userRole="teacher"
           userId={user._id}
         />
@@ -162,7 +167,7 @@ export function TeacherDashboard({ user }: TeacherDashboardProps) {
               <div>
                 <p className="text-sm opacity-90">Asignaciones Activas</p>
                 <p className="text-2xl font-bold">
-                  {assignments.filter((a) => a.status === "published").length}
+                  
                 </p>
               </div>
               <BookOpen className="h-8 w-8" />
@@ -230,43 +235,79 @@ export function TeacherDashboard({ user }: TeacherDashboardProps) {
         {/* Progreso por temas */}
         <Card>
           <CardHeader>
-            <CardTitle>Progreso por Tema</CardTitle>
+            <CardTitle>Progreso por Asignación</CardTitle>
             <CardDescription>
-              Rendimiento grupal por área de estudio
+              Rendimiento grupal por asignación
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {mathTopics.map((topic) => {
-                const completedByStudents = filteredUsers.filter(
-                  (s) => s.completedTopics?.includes(topic.id) || false
-                ).length;
-                const completionRate =
-                  filteredUsers.length > 0
-                    ? (completedByStudents / filteredUsers.length) * 100
-                    : 0;
+                {loading ? (
+                  <div className="text-center py-4 text-muted-foreground">Cargando grupos...</div>
+                ) : groups.length === 0 ? (
+                  <div className="text-center py-4 text-muted-foreground">No hay grupos disponibles</div>
+                ) : (
+                  groups?.map((group) => {
+                    if(!group || !group.assignedStudents) return null
+                    const completedByStudents = group.completedBy.length;
+                    const totalStudents = group.assignedStudents.length;
+                    const completionRate = totalStudents > 0 ? (completedByStudents / totalStudents) * 100 : 0;
+                    const difficultyColor = group.difficulty === "easy" ? "bg-green-500" : group.difficulty === "medium" ? "bg-yellow-500" : "bg-red-500";
+                    const isOverdue = new Date(group.dueDate) < new Date();
 
-                return (
-                  <div key={topic.id} className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center space-x-2">
-                        <div className={`p-1 rounded ${topic.color}`}>
-                          <div className="w-3 h-3"></div>
+                    return (
+                      <div key={group._id} className="space-y-2 p-3 rounded-lg border hover:bg-gray-50">
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center space-x-2">
+                            <div className={`p-1 rounded ${difficultyColor}`}>
+                              <div className="w-3 h-3"></div>
+                            </div>
+                            <span className="font-medium">{group.title}</span>
+                          </div>
+                          <div className="flex gap-2">
+                            <Badge variant={group.status === "published" ? "default" : "secondary"}>
+                              {group.status === "published" ? "Publicada" : "Borrador"}
+                            </Badge>
+                            {isOverdue && <Badge variant="destructive">Vencida</Badge>}
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              onClick={() => setSelectedGroup(group)}
+                            >
+                              <Settings className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              onClick={() => handleDeleteGroup(group._id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
-                        <span className="font-medium">{topic.name}</span>
+                        <p className="text-sm text-muted-foreground">{group.description}</p>
+                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                          <span>{group.mainTheme}</span>
+                          <span>•</span>
+                          <span>Dificultad: {group.difficulty}</span>
+                          <span>•</span>
+                          <span>Vence: {new Date(group.dueDate).toLocaleDateString()}</span>
+                        </div>
+                        <div className="mt-2">
+                          <div className="flex items-center justify-between text-xs mb-1">
+                            <span>Progreso de estudiantes</span>
+                            <span>{completedByStudents}/{totalStudents}</span>
+                          </div>
+                          <Progress value={completionRate} className="h-2" />
+                        </div>
+                        <div className="flex justify-between text-xs text-muted-foreground">
+                          <span>{group.points} pts</span>
+                          <span>{group.experience} XP</span>
+                        </div>
                       </div>
-                      <span className="text-sm text-muted-foreground">
-                        {completedByStudents}/{filteredUsers.length} completado
-                      </span>
-                    </div>
-                    <Progress value={completionRate} className="h-2" />
-                    <p className="text-xs text-muted-foreground">
-                      {Math.round(completionRate)}% de estudiantes han
-                      completado este tema
-                    </p>
-                  </div>
-                );
-              })}
+                    );
+                  })
+                )}
             </div>
           </CardContent>
         </Card>
@@ -288,127 +329,6 @@ export function TeacherDashboard({ user }: TeacherDashboardProps) {
           </div>
         </CardHeader>
         <CardContent>
-          {assignments.length === 0 ? (
-            <div className="text-center py-8">
-              <BookOpen className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                No hay asignaciones aún
-              </h3>
-              <p className="text-gray-500 mb-4">
-                Crea tu primera asignación para comenzar a gestionar lecciones
-              </p>
-              <CreateAssignmentModal
-                onCreateAssignment={handleCreateAssignment}
-              />
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {assignments.map((assignment) => {
-                const topic = mathTopics.find(
-                  (t) => t.id === assignment.topicId
-                );
-                const completionRate =
-                  (assignment.completedBy.length /
-                    assignment.assignedStudents.length) *
-                  100;
-                const isOverdue = assignment.dueDate < new Date();
-
-                return (
-                  <Card
-                    key={assignment.id}
-                    className={`hover:shadow-md transition-shadow cursor-pointer ${
-                      isOverdue ? "border-red-200 bg-red-50" : ""
-                    }`}
-                  >
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4 flex-1">
-                          <div
-                            className={`p-3 rounded-lg ${
-                              topic?.color || "bg-gray-500"
-                            }`}
-                          >
-                            <BookOpen className="h-5 w-5 text-white" />
-                          </div>
-
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <h3 className="font-medium">
-                                {assignment.title}
-                              </h3>
-                              <Badge
-                                variant={
-                                  assignment.status === "published"
-                                    ? "default"
-                                    : "secondary"
-                                }
-                              >
-                                {assignment.status === "published"
-                                  ? "Publicada"
-                                  : "Borrador"}
-                              </Badge>
-                              {isOverdue && (
-                                <Badge variant="destructive">Vencida</Badge>
-                              )}
-                            </div>
-
-                            <p className="text-sm text-muted-foreground mb-2">
-                              {assignment.description}
-                            </p>
-
-                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                              <span>{topic?.name}</span>
-                              <span>•</span>
-                              <span>
-                                {assignment.assignedStudents.length} estudiantes
-                              </span>
-                              <span>•</span>
-                              <span>
-                                Vence: {assignment.dueDate.toLocaleDateString()}
-                              </span>
-                            </div>
-
-                            <div className="mt-2">
-                              <div className="flex items-center justify-between text-xs mb-1">
-                                <span>Progreso de estudiantes</span>
-                                <span>
-                                  {assignment.completedBy.length}/
-                                  {assignment.assignedStudents.length}
-                                </span>
-                              </div>
-                              <Progress
-                                value={completionRate}
-                                className="h-1"
-                              />
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <div className="text-right mr-4">
-                            <div className="text-sm font-medium">
-                              {assignment.points} pts
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              {assignment.xp} XP
-                            </div>
-                          </div>
-
-                          <Button
-                            onClick={() => setSelectedAssignment(assignment)}
-                            className="bg-green-500 hover:bg-green-600"
-                          >
-                            <Settings className="h-4 w-4 mr-2" />
-                            Gestionar Lecciones
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
         </CardContent>
       </Card>
 

@@ -1,22 +1,23 @@
 import { createSlice } from "@reduxjs/toolkit";
-import type { PayloadAction } from "@reduxjs/toolkit";
-import { fetchGroups, createGroup } from "./groupActions";
+import { createGroup, deleteGroup, fetchGroups } from "./groupActions";
 
 export interface Group {
+  _id: string;
   title: string;
   teacherId: string;
   description: string;
   difficulty: "easy" | "medium" | "hard";
   assignedStudents: string[];
-  completeBy: string[];
+  completedBy: string[];
   experience: number;
   mainTheme: string;
   points: number;
   status: "published" | "draft";
-  subtopicsThemes: string[];
+  subtopicThemes: string[];
   createdAt: Date;
   updatedAt: Date;
   dueDate: Date;
+  __v: number;
 }
 
 interface GroupState {
@@ -34,6 +35,7 @@ const groupSlice = createSlice({
   } as GroupState,
   reducers: {
     // You can add synchronous reducers here if needed
+
   },
   extraReducers: (builder) => {
     builder
@@ -49,8 +51,20 @@ const groupSlice = createSlice({
         state.loading = false;
         state.error =
           typeof action.payload === "string" ? action.payload : "Unknown error";
-      });
-    builder
+      })
+      .addCase(deleteGroup.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteGroup.fulfilled, (state, action) => {
+        state.loading = false;
+        state.groups = state.groups.filter((group) => group._id !== action.payload);
+      })
+      .addCase(deleteGroup.rejected, (state, action) => {
+        state.loading = false;
+        state.error =
+          typeof action.payload === "string" ? action.payload : "Unknown error";
+      })
       .addCase(createGroup.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -63,7 +77,7 @@ const groupSlice = createSlice({
         state.loading = false;
         state.error =
           typeof action.payload === "string" ? action.payload : "Unknown error";
-      });
+      })
   },
 });
 

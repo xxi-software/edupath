@@ -18,20 +18,20 @@ import {
   Lock,
   Plus
 } from "lucide-react";
-import { type Assignment } from "../../data/assignments";
 import { type Lesson, type LessonProgress, mockLessons, AdaptiveAI } from "../../data/lessons";
 import { LessonPlayer } from "./LessonPlayer";
 import { LessonCreator } from "./LessonCreator";
+import type { Group } from "@/store/groupSlice";
 
 interface AssignmentManagerProps {
-  assignment: Assignment;
+  group: Group;
   userRole: 'student' | 'teacher';
   userId: string;
 }
 
-export function AssignmentManager({ assignment, userRole, userId }: AssignmentManagerProps) {
+export function AssignmentManager({ group, userRole, userId }: AssignmentManagerProps) {
   const [lessons, setLessons] = useState<Lesson[]>(
-    mockLessons.filter(l => l.topicId === assignment.topicId)
+    mockLessons.filter(l => l.topicId === group._id || "")
   );
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
   const [lessonProgress, setLessonProgress] = useState<LessonProgress[]>([]);
@@ -113,6 +113,10 @@ export function AssignmentManager({ assignment, userRole, userId }: AssignmentMa
     return labels[difficulty as keyof typeof labels] || 'Desconocido';
   };
 
+  if (!group) {
+    return <div>Cargando grupo...</div>;
+  }
+
   return (
     <div className="space-y-6">
       {/* Header de la asignación */}
@@ -120,10 +124,10 @@ export function AssignmentManager({ assignment, userRole, userId }: AssignmentMa
         <CardContent className="p-6">
           <div className="flex items-start justify-between">
             <div className="space-y-2">
-              <h2 className="text-2xl font-bold">{assignment.title}</h2>
-              <p className="opacity-90">{assignment.description}</p>
+              <h2 className="text-2xl font-bold">{group.title}</h2>
+              <p className="opacity-90">{group.description}</p>
               <div className="flex items-center gap-4 text-sm opacity-75">
-                <span>Vence: {assignment.dueDate.toLocaleDateString()}</span>
+                <span>Vence: {new Date(group.dueDate).toLocaleDateString()}</span>
                 <span>•</span>
                 <span>{lessons.length} lecciones</span>
               </div>
@@ -480,8 +484,8 @@ export function AssignmentManager({ assignment, userRole, userId }: AssignmentMa
       {/* Modal de creador de lección */}
       {showLessonCreator && (
         <LessonCreator
-          assignmentId={assignment.id}
-          topicId={assignment.topicId}
+          assignmentId={group._id}
+          topicId={group.mainTheme}
           onLessonCreated={(newLesson) => {
             setLessons(prev => [...prev, newLesson]);
             setShowLessonCreator(false);

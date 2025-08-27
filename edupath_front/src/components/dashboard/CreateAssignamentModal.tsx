@@ -34,9 +34,8 @@ import {
 } from "../../../components/ui/card";
 import { Badge } from "../../../components/ui/badge";
 import { Calendar, Users, BookOpen, Plus } from "lucide-react";
-import { type Assignment } from "../../data/assignments";
 import { selectUser, type User } from "@/store/authSlice";
-import axios from "axios";
+import type { Group } from "@/store/groupSlice";
 
 // 1. Definir una interfaz para el estado del formulario para un tipado robusto.
 type Difficulty = "easy" | "medium" | "hard";
@@ -48,6 +47,7 @@ interface FormDataState {
   mainTheme: string;
   subtopicThemes: string[];
   assignedStudents: string[];
+  completedBy: string[];
   dueDate: string;
   points: number;
   experience: number;
@@ -55,10 +55,12 @@ interface FormDataState {
   status: Status;
 }
 
+type NewGroupData = Omit<Group, '_id' | 'teacher' | 'completedBy' | 'createdAt' | 'updatedAt' | '__v'> & {
+  teacherId: string;
+};
+
 interface CreateAssignmentModalProps {
-  onCreateAssignment: (
-    assignment: Omit<Assignment, "createdAt" | "completedBy" | "teacherId">
-  ) => void;
+  onCreateAssignment: (assignment: NewGroupData) => void;
 }
 
 export function CreateAssignmentModal({
@@ -89,6 +91,7 @@ export function CreateAssignmentModal({
     mainTheme: "",
     subtopicThemes: [],
     assignedStudents: [],
+    completedBy: [],
     dueDate: "",
     points: 50,
     experience: 100,
@@ -125,10 +128,18 @@ export function CreateAssignmentModal({
       return;
     }
     const newAssignment = {
-      ...formData,
-      teacherId: currentUser._id,
-      status,
-      dueDate: new Date(formData.dueDate),
+      title: formData.title,
+      teacherId: currentUser._id, // debe ser un string tipo ObjectId
+      description: formData.description,
+      difficulty: formData.difficulty,
+      assignedStudents: formData.assignedStudents, // array de ObjectId (string)
+      completedBy: [], // array de ObjectId (string)
+      experience: formData.experience,
+      mainTheme: formData.mainTheme,
+      points: formData.points,
+      status: status,
+      subtopicThemes: formData.subtopicThemes, // array de string
+      dueDate: formData.dueDate, // string tipo "2025-09-05T00:00:00.000Z"
     };
     console.log(currentUser._id);
     onCreateAssignment(newAssignment);
@@ -139,9 +150,10 @@ export function CreateAssignmentModal({
       mainTheme: "",
       subtopicThemes: [],
       assignedStudents: [],
+      completedBy: [],
       dueDate: "",
-      points: 50,
-      experience: 100,
+      points: 0,
+      experience: 0,
       difficulty: "medium",
       status: "draft",
     });
