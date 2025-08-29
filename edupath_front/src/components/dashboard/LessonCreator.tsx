@@ -20,18 +20,25 @@ import {
   Clock,
   Save
 } from "lucide-react";
-import { type Lesson, type Question } from "../../data/lessons";
 import { mathTopics } from "../../data/mathTopics";
+import type { Group } from "@/store/groupSlice";
+import { useDispatch } from "react-redux";
+import type { AppDispatch } from "@/store";
+import { createLesson, fetchLessons } from "@/store/lessonActions";
+import type { Lesson, Question } from "@/store/lessonSlice";
 
 interface LessonCreatorProps {
+  group: Group;
   assignmentId: string;
   topicId: string;
   onLessonCreated: (lesson: Lesson) => void;
   onClose: () => void;
 }
 
-export function LessonCreator({ assignmentId, topicId, onLessonCreated, onClose }: LessonCreatorProps) {
+export function LessonCreator({ group, assignmentId, topicId, onLessonCreated, onClose }: LessonCreatorProps) {
   const [currentTab, setCurrentTab] = useState("basic");
+  const dispatch: AppDispatch = useDispatch();
+  
   const [lessonData, setLessonData] = useState({
     title: "",
     description: "",
@@ -108,11 +115,9 @@ export function LessonCreator({ assignmentId, topicId, onLessonCreated, onClose 
 
   const handleSave = () => {
     const newLesson: Lesson = {
-      id: `lesson_${Date.now()}`,
+      _id: `lesson_${Date.now()}`,
       title: lessonData.title,
       description: lessonData.description,
-      topicId: topicId,
-      subtopicId: topic?.subtopics[0]?.id || '',
       assignmentId: assignmentId,
       order: 1,
       estimatedDuration: lessonData.estimatedDuration,
@@ -138,7 +143,8 @@ export function LessonCreator({ assignmentId, topicId, onLessonCreated, onClose 
       unlocked: true,
       completed: false
     };
-
+    dispatch(createLesson(newLesson));
+    dispatch(fetchLessons(group._id));
     onLessonCreated(newLesson);
   };
 

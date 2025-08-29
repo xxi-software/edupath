@@ -8,11 +8,10 @@ export const fetchGroups = createAsyncThunk("groups/fetchGroups", async () => {
       "http://localhost:3000/api/group/getGroups"
     );
     if (response.status === 200) {
-      console.log(response.data);
       return response.data;
     }
   } catch (error) {
-    console.error("Error fetching groups:", error);
+    return (error as Error).message;
   }
 });
 

@@ -80,18 +80,14 @@ export function TeacherDashboard({ user }: TeacherDashboardProps) {
       experience: newAssignment.experience || 0,
       mainTheme: newAssignment.mainTheme || "default-topic",
       points: newAssignment.points || 0,
-      status:
-        newAssignment.status === "completed"
-          ? "published"
-          : newAssignment.status || "draft",
-      subtopicThemes: [],
+      status: newAssignment.status,
+      subtopicThemes: newAssignment.subtopicThemes || [],
       dueDate: newAssignment.dueDate,
     } as unknown as Group;
 
     try {
       await dispatch(createGroup(groupData)).unwrap();
-      console.log(groups);
-      // Opcional: agregar notificación de éxito
+      await dispatch(fetchGroups());
     } catch (error) {
       console.error("Error creating group:", error);
       // Opcional: mostrar error al usuario
@@ -287,8 +283,9 @@ export function TeacherDashboard({ user }: TeacherDashboardProps) {
                         </div>
                         <p className="text-sm text-muted-foreground">{group.description}</p>
                         <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                          <span>{group.mainTheme}</span>
+                          <span>Tema principal: {group.mainTheme}</span>
                           <span>•</span>
+                          <span>Subtemas: {group.subtopicThemes.length > 0 ? <div className="subtopicThemes map">{group.subtopicThemes.map((theme) => <span key={theme}>{theme} | </span>)}</div> : "N/A"}</span>
                           <span>Dificultad: {group.difficulty}</span>
                           <span>•</span>
                           <span>Vence: {new Date(group.dueDate).toLocaleDateString()}</span>

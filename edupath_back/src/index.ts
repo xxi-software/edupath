@@ -6,6 +6,7 @@ import router from './routes/userR';
 import listUsersRouter from './routes/listUsers';
 import cors from 'cors';
 import routerGroup from './routes/crudGroup';
+import routerLesson from './routes/crudLesson';
 
 const port = process.env.PORT || 3000;
 const url = process.env.MONGODB_URL_CLUSTER;
@@ -26,6 +27,8 @@ app.use('/api/users', router);
 app.use("/api/users", listUsersRouter);
 
 app.use('/api/group', routerGroup)
+
+app.use('/api/lesson', routerLesson)
 
 async function startServer() {
   try {
