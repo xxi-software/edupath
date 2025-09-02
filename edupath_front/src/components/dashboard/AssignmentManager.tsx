@@ -39,17 +39,16 @@ import {
   Settings,
 } from "lucide-react";
 import {
-  type Lesson,
   type LessonProgress,
-  mockLessons,
   AdaptiveAI,
 } from "../../data/lessons";
 import { LessonPlayer } from "./LessonPlayer";
-import { LessonCreator } from "./LessonCreator";
+import { LessonForm } from "./LessonForm";
 import type { Group } from "@/store/groupSlice";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store";
 import { deleteLesson, fetchLessons } from "@/store/lessonActions";
+import type { Lesson } from "@/store/lessonSlice";
 
 interface AssignmentManagerProps {
   group: Group;
@@ -70,7 +69,7 @@ export function AssignmentManager({
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
   const [lessonProgress, setLessonProgress] = useState<LessonProgress[]>([]);
   const [showLessonPlayer, setShowLessonPlayer] = useState(false);
-  const [showLessonCreator, setShowLessonCreator] = useState(false);
+  const [showLessonForm, setShowLessonForm] = useState(false);
 
   // Calcular estadísticas de progreso
   const completedLessons = lessons.filter((l) => l.completed).length;
@@ -109,6 +108,7 @@ export function AssignmentManager({
   };
 
   const deleteAssignment = (id: string) => {
+    console.log(id);
     // Lógica para eliminar la asignación
     dispatch(deleteLesson(id));
     dispatch(fetchLessons(group._id));
@@ -221,7 +221,7 @@ export function AssignmentManager({
                     </p>
                   </div>
                   <Button
-                    onClick={() => setShowLessonCreator(true)}
+                    onClick={() => setShowLessonForm(true)}
                     className="bg-green-500 hover:bg-green-600"
                   >
                     <Plus className="h-4 w-4 mr-2" />
@@ -364,11 +364,10 @@ export function AssignmentManager({
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() =>
-                          alert(
-                            "Funcionalidad de editar lección aún no implementada"
-                          )
-                        }
+                        onClick={() => {
+                          setSelectedLesson(lesson);
+                          setShowLessonForm(true);
+                        }}
                       >
                         <Settings className="h-4 w-4" />
                       </Button>
@@ -449,7 +448,7 @@ export function AssignmentManager({
                 <h4 className="font-medium">Progreso por Lección</h4>
                 {lessons.map((lesson) => (
                   <div
-                    key={lesson.id}
+                    key={lesson._id}
                     className="flex items-center justify-between p-3 border rounded-lg"
                   >
                     <div>
@@ -611,15 +610,17 @@ export function AssignmentManager({
       )}
 
       {/* Modal de creador de lección */}
-      {showLessonCreator && (
-        <LessonCreator
+      {showLessonForm && (
+        <LessonForm
           group={group}
           assignmentId={group._id}
           topicId={group.mainTheme}
-          onLessonCreated={() => {
-            setShowLessonCreator(false);
+          lesson={selectedLesson}
+          onLessonSaved={() => {
+            setShowLessonForm(false);
+            setSelectedLesson(null);
           }}
-          onClose={() => setShowLessonCreator(false)}
+          onClose={() => setShowLessonForm(false)}
         />
       )}
     </div>

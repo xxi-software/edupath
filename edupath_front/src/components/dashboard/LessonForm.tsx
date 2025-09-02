@@ -24,41 +24,43 @@ import { mathTopics } from "../../data/mathTopics";
 import type { Group } from "@/store/groupSlice";
 import { useDispatch } from "react-redux";
 import type { AppDispatch } from "@/store";
-import { createLesson, fetchLessons } from "@/store/lessonActions";
+import { createLesson, fetchLessons, updateLesson } from "@/store/lessonActions";
 import type { Lesson, Question } from "@/store/lessonSlice";
 
 interface LessonCreatorProps {
   group: Group;
   assignmentId: string;
   topicId: string;
-  onLessonCreated: (lesson: Lesson) => void;
+  lesson?: Lesson | null; // Lección opcional para editar
+  onLessonSaved: (lesson: Lesson) => void;
   onClose: () => void;
 }
 
-export function LessonCreator({ group, assignmentId, topicId, onLessonCreated, onClose }: LessonCreatorProps) {
+export function LessonForm({ group, assignmentId, topicId, lesson, onLessonSaved, onClose }: LessonCreatorProps) {
   const [currentTab, setCurrentTab] = useState("basic");
   const dispatch: AppDispatch = useDispatch();
   
   const [lessonData, setLessonData] = useState({
-    title: "",
-    description: "",
-    estimatedDuration: 15,
-    difficulty: 2,
-    theory: "",
-    examples: [""],
-    points: 50,
-    xp: 75,
-    minAccuracy: 70,
-    adaptiveDifficulty: true,
-    retryAllowed: true,
-    maxRetries: 3
+    title: lesson?.title || "",
+    description: lesson?.description || "",
+    estimatedDuration: lesson?.estimatedDuration || 15,
+    difficulty: lesson?.difficulty || 2,
+    theory: lesson?.content.theory || "",
+    examples: lesson?.content.examples || [""],
+    points: lesson?.rewards.points || 50,
+    xp: lesson?.rewards.xp || 75,
+    minAccuracy: lesson?.adaptiveSettings.minAccuracy || 70,
+    adaptiveDifficulty: lesson?.adaptiveSettings.adaptiveDifficulty || true,
+    retryAllowed: lesson?.adaptiveSettings.retryAllowed || true,
+    maxRetries: lesson?.adaptiveSettings.maxRetries || 3
   });
 
-  const [questions, setQuestions] = useState<Omit<Question, 'id'>[]>([{
-    type: 'multiple-choice',
-    question: '',
-    options: ['', '', '', ''],
-    correctAnswer: '',
+  const [questions, setQuestions] = useState<Omit<Question, 'id'>[]>(
+    lesson?.questions?.map(q => ({ ...q, id: undefined })) || [{
+      type: 'multiple-choice',
+      question: '',
+      options: ['', '', '', ''],
+      correctAnswer: '',
     explanation: '',
     difficulty: 2,
     points: 10,
@@ -115,7 +117,7 @@ export function LessonCreator({ group, assignmentId, topicId, onLessonCreated, o
 
   const handleSave = () => {
     const newLesson: Lesson = {
-      _id: `lesson_${Date.now()}`,
+      _id: lesson?._id || `lesson_${Date.now()}`,
       title: lessonData.title,
       description: lessonData.description,
       assignmentId: assignmentId,
@@ -126,13 +128,13 @@ export function LessonCreator({ group, assignmentId, topicId, onLessonCreated, o
       content: {
         theory: lessonData.theory,
         examples: lessonData.examples.filter(ex => ex.trim() !== ''),
-        visualAids: []
+        visualAids: lesson?.content?.visualAids || []
       },
       questions: questions.map((q, i) => ({ ...q, id: `q_${Date.now()}_${i}` })) as Question[],
       rewards: {
         points: lessonData.points,
         xp: lessonData.xp,
-        badges: []
+        badges: lesson?.rewards?.badges || []
       },
       adaptiveSettings: {
         minAccuracy: lessonData.minAccuracy,
@@ -140,12 +142,16 @@ export function LessonCreator({ group, assignmentId, topicId, onLessonCreated, o
         retryAllowed: lessonData.retryAllowed,
         maxRetries: lessonData.maxRetries
       },
-      unlocked: true,
-      completed: false
+      unlocked: lesson?.unlocked || false,
+      completed: lesson?.completed || false
     };
-    dispatch(createLesson(newLesson));
+    if(lesson){
+      dispatch(updateLesson({id: lesson._id, data: newLesson}));
+    } else {
+      dispatch(createLesson(newLesson));
+    }
     dispatch(fetchLessons(group._id));
-    onLessonCreated(newLesson);
+    onLessonSaved(newLesson);
   };
 
   const getDifficultyColor = (difficulty: number) => {
@@ -176,7 +182,7 @@ export function LessonCreator({ group, assignmentId, topicId, onLessonCreated, o
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <BookOpen className="h-5 w-5 text-green-500" />
-            Crear Nueva Lección
+            {lesson ? "Editar Lección" : "Crear Nueva Lección"}
           </DialogTitle>
           <DialogDescription>
             Tema: {topic?.name} • Diseña contenido educativo adaptativo con IA
@@ -627,7 +633,7 @@ export function LessonCreator({ group, assignmentId, topicId, onLessonCreated, o
             disabled={!lessonData.title || !lessonData.theory || questions.some(q => !q.question)}
           >
             <Save className="h-4 w-4 mr-2" />
-            Crear Lección
+            {lesson ? "Editar Lección" : "Crear Lección"}
           </Button>
         </div>
       </DialogContent>

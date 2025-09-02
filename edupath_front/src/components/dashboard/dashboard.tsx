@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useSelector } from "react-redux";
-import { StudentDashboard } from "./studentDashboard";
+import { StudentDashboard } from "./StudentDashboard";
 import { TeacherDashboard } from "./TeacherDashboard";
 import { Button } from "../../../components/ui/button";
 import { BookOpen, GraduationCap, Users } from "lucide-react";

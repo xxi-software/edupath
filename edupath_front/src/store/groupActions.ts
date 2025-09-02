@@ -2,10 +2,10 @@ import axios from "axios";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import type { Group } from "./groupSlice";
 
-export const fetchGroups = createAsyncThunk("groups/fetchGroups", async () => {
+export const fetchGroups = createAsyncThunk("groups/fetchGroups", async (id: string) => {
   try {
     const response = await axios.get(
-      "http://localhost:3000/api/group/getGroups"
+      "http://localhost:3000/api/group/getGroups?_id=" + id
     );
     if (response.status === 200) {
       return response.data;

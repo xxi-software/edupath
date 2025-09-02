@@ -33,7 +33,9 @@ routerGroup.post("/createGroup", async (req, res) => {
 
 routerGroup.get("/getGroups", async (req, res) => {
   try {
-    const groups = await Group.find();
+    const { _id } = req.body;
+    console.log(_id);
+    const groups = await Group.find({ teacherId: _id });
     res.status(200).json(groups);
   } catch (error) {
     res.status(400).json({ error: error.message });

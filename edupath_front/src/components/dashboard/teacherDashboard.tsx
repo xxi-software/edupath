@@ -59,13 +59,13 @@ export function TeacherDashboard({ user }: TeacherDashboardProps) {
 
   const handleDeleteGroup = (id: string) => {
     dispatch(deleteGroup(id))
-    dispatch(fetchGroups());
+    dispatch(fetchGroups(user._id));
   }
 
   useEffect(() => {
-    dispatch(fetchGroups());
+    dispatch(fetchGroups(user._id));
     dispatch(fetchUsers());
-  }, [dispatch]);
+  }, [dispatch, user._id]);
 
   const handleCreateAssignment = async (
     newAssignment: Omit<Group, "createdAt" | "completedBy" | "teacherId">
@@ -87,7 +87,7 @@ export function TeacherDashboard({ user }: TeacherDashboardProps) {
 
     try {
       await dispatch(createGroup(groupData)).unwrap();
-      await dispatch(fetchGroups());
+      await dispatch(fetchGroups(user._id));
     } catch (error) {
       console.error("Error creating group:", error);
       // Opcional: mostrar error al usuario
@@ -243,7 +243,7 @@ export function TeacherDashboard({ user }: TeacherDashboardProps) {
                 ) : groups.length === 0 ? (
                   <div className="text-center py-4 text-muted-foreground">No hay grupos disponibles</div>
                 ) : (
-                  groups?.map((group) => {
+                  Array.isArray(groups) ? groups.map((group) => {
                     if(!group || !group.assignedStudents) return null
                     const completedByStudents = group.completedBy.length;
                     const totalStudents = group.assignedStudents.length;
@@ -303,7 +303,7 @@ export function TeacherDashboard({ user }: TeacherDashboardProps) {
                         </div>
                       </div>
                     );
-                  })
+                  }) : null
                 )}
             </div>
           </CardContent>
