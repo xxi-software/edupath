@@ -15,6 +15,19 @@ export const fetchGroups = createAsyncThunk("groups/fetchGroups", async (id: str
   }
 });
 
+export const fetchStudentGroups = createAsyncThunk("groups/fetchStudentGroups", async (id: string) => {
+  try {
+    const response = await axios.get(
+      "http://localhost:3000/api/group/getStudentsGroups?_id=" + id
+    );
+    if (response.status === 200) {
+      return response.data;
+    }
+  } catch (error) {
+    return (error as Error).message;
+  }
+});
+
 export const createGroup = createAsyncThunk(
   "groups/createGroup",
   async (groupData: Group) => {

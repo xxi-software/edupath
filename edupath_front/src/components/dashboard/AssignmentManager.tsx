@@ -38,10 +38,7 @@ import {
   Trash2,
   Settings,
 } from "lucide-react";
-import {
-  type LessonProgress,
-  AdaptiveAI,
-} from "../../data/lessons";
+import { type LessonProgress, AdaptiveAI } from "../../data/lessons";
 import { LessonPlayer } from "./LessonPlayer";
 import { LessonForm } from "./LessonForm";
 import type { Group } from "@/store/groupSlice";
@@ -112,7 +109,7 @@ export function AssignmentManager({
     // Lógica para eliminar la asignación
     dispatch(deleteLesson(id));
     dispatch(fetchLessons(group._id));
-  }
+  };
 
   useEffect(() => {
     dispatch(fetchLessons(group._id));
@@ -361,24 +358,35 @@ export function AssignmentManager({
                           Completada
                         </Badge>
                       )}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => {
-                          setSelectedLesson(lesson);
-                          setShowLessonForm(true);
-                        }}
-                      >
-                        <Settings className="h-4 w-4" />
-                      </Button>
+                      {userRole === "teacher" ? (
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              setSelectedLesson(lesson);
+                              setShowLessonForm(true);
+                            }}
+                          >
+                            <Settings className="h-4 w-4" />
+                          </Button>
 
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => deleteAssignment(lesson._id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => deleteAssignment(lesson._id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </>
+                      ) : (
+                        !lesson.unlocked && (
+                          <Badge className="bg-gray-500 text-white">
+                            <Lock className="h-3 w-3 mr-1" />
+                            Bloqueada
+                          </Badge>
+                        )
+                      )}
                       {lesson.unlocked && (
                         <Button
                           size="sm"

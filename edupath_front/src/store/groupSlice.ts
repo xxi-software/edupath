@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { createGroup, deleteGroup, fetchGroups } from "./groupActions";
+import { createGroup, deleteGroup, fetchGroups, fetchStudentGroups } from "./groupActions";
 
 export interface Group {
   _id: string;
@@ -74,6 +74,19 @@ const groupSlice = createSlice({
         state.groups.push(action.payload);
       })
       .addCase(createGroup.rejected, (state, action) => {
+        state.loading = false;
+        state.error =
+          typeof action.payload === "string" ? action.payload : "Unknown error";
+      })
+      .addCase(fetchStudentGroups.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchStudentGroups.fulfilled, (state, action) => {
+        state.loading = false;
+        state.groups =  Array.isArray(action.payload) ? action.payload.flat() : action.payload;
+      })
+      .addCase(fetchStudentGroups.rejected, (state, action) => {
         state.loading = false;
         state.error =
           typeof action.payload === "string" ? action.payload : "Unknown error";

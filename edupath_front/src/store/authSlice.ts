@@ -12,6 +12,7 @@ export interface User {
   profilePicture?: string;
   bio?: string;
   experience?: number;
+  level?: number;
   streakDays?: number;
   isActive: boolean;
   lastLogin: string | null;

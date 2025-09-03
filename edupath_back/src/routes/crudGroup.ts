@@ -5,7 +5,20 @@ const routerGroup = Router();
 
 routerGroup.post("/createGroup", async (req, res) => {
   try {
-    const { title, teacherId, description, difficulty, assignedStudents, completedBy, experience, mainTheme, points, status, subtopicThemes, dueDate } = req.body;
+    const {
+      title,
+      teacherId,
+      description,
+      difficulty,
+      assignedStudents,
+      completedBy,
+      experience,
+      mainTheme,
+      points,
+      status,
+      subtopicThemes,
+      dueDate,
+    } = req.body;
     console.log("BODY RECIBIDO", req.body);
     const group = new Group({
       title,
@@ -19,12 +32,12 @@ routerGroup.post("/createGroup", async (req, res) => {
       points,
       status,
       subtopicThemes,
-      dueDate
+      dueDate,
     });
     await group.save();
     res.status(201).json({
       status: 200,
-      message: "Grupo creado exitosamente"
+      message: "Grupo creado exitosamente",
     });
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -33,9 +46,19 @@ routerGroup.post("/createGroup", async (req, res) => {
 
 routerGroup.get("/getGroups", async (req, res) => {
   try {
-    const { _id } = req.body;
-    console.log(_id);
+    const { _id } = req.query;
     const groups = await Group.find({ teacherId: _id });
+    res.status(200).json(groups);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+routerGroup.get("/getStudentsGroups", async (req, res) => {
+  try {
+    const { _id } = req.query;
+    const groups = await Group.find({ assignedStudents: _id });
+    console.log(groups);
     res.status(200).json(groups);
   } catch (error) {
     res.status(400).json({ error: error.message });
