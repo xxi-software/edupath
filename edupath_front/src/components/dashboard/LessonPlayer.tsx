@@ -89,7 +89,7 @@ export function LessonPlayer({ lesson, onComplete, onClose }: LessonPlayerProps)
       timeSpent: questionTimeSpent,
       hintsUsed: showHint ? 1 : 0
     };
-
+    console.log(newAnswer);
     setUserAnswers(prev => [...prev, newAnswer]);
     
     // IA: Decidir si mostrar explicación adicional
@@ -227,7 +227,7 @@ export function LessonPlayer({ lesson, onComplete, onClose }: LessonPlayerProps)
 
           {/* Fase de práctica */}
           {currentPhase === 'practice' && currentQuestion && (
-            <div className="p-6 space-y-6">
+            <div className="p-6 space-y-6 scroll-auto overflow-auto max-h-[60vh]">
               <Card>
                 <CardContent className="p-6">
                   <div className="space-y-4">

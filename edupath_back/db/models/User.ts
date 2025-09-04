@@ -19,6 +19,10 @@ export interface IUser extends mongoose.Document {
   resetPasswordExpires?: Date;
   verificationToken?: string;
   groups?: mongoose.Types.ObjectId[]; // Array of group IDs
+  // Campos denormalizados para "mejor puntaje"
+  totalBestPoints?: number;                 // Suma de mejores puntajes por lección
+  bestByLesson?: Record<string, number>;    // lessonId -> mejor puntaje
+  groupPoints?: Record<string, number>;     // groupId -> suma de deltas por grupo
   createdAt: Date;
   updatedAt: Date;
   comparePassword: (password: string) => Promise<boolean>;
@@ -42,6 +46,11 @@ const userSchema = new mongoose.Schema<IUser>({
   resetPasswordExpires: { type: Date, default: null },
   verificationToken: { type: String, default: "" },
   groups: { type: [mongoose.Schema.Types.ObjectId], ref: "Group", default: [] },
+
+  // Acumuladores de "mejor puntaje"
+  totalBestPoints: { type: Number, default: 0 },
+  bestByLesson: { type: Map, of: Number, default: {} },
+  groupPoints: { type: Map, of: Number, default: {} },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });

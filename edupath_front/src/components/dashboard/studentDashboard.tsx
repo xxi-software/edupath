@@ -13,14 +13,7 @@ import type { Lesson } from "@/store/lessonSlice";
 import { Progress } from "../../../components/ui/progress";
 import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";
-import {
-  Trophy,
-  Flame,
-  Star,
-  Target,
-  Play,
-  ChevronRight,
-} from "lucide-react";
+import { Trophy, Flame, Star, Target, Play, ChevronRight } from "lucide-react";
 import { availableBadges } from "../../data/badges";
 import type { User } from "@/store/authSlice";
 import { fetchStudentGroups } from "@/store/groupActions";
@@ -56,14 +49,13 @@ export function StudentDashboard({ user }: StudentDashboardProps) {
   useEffect(() => {
     if (selectedGroup) {
       dispatch(fetchLessons(selectedGroup));
-    }
-    else{
+    } else {
       dispatch(fetchStudentGroups(user._id));
     }
   }, [dispatch, selectedGroup, user._id]);
 
   useEffect(() => {
-    console.log("grupos",groups)
+    console.log("grupos", groups);
   }, [groups]);
 
   if (selectedGroup) {
@@ -91,55 +83,42 @@ export function StudentDashboard({ user }: StudentDashboardProps) {
   return (
     <div className="space-y-6">
       {/* Stats de usuario */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-0">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm opacity-90">Nivel</p>
-                <p className="text-2xl font-bold">{user.level}</p>
+      <Card className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0">
+        <CardContent className="p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="text-4xl">
+                <img
+                  src="/book.jpg"
+                  alt={user.name}
+                  className="h-12 w-12 rounded-full object-cover"
+                />
               </div>
-              <Trophy className="h-8 w-8" />
+              <div>
+                <h2 className="text-2xl font-bold">¡Hola, {user.name}!</h2>
+                <p className="opacity-90">
+                  Nivel {user.level} • {user.streakDays} días de racha
+                </p>
+              </div>
             </div>
-          </CardContent>
-        </Card>
+            <div className="text-right">
+              <div className="text-3xl font-bold">{user.experience}</div>
+              <div className="text-sm opacity-75">XP Total</div>
+            </div>
+          </div>
 
-        <Card className="bg-gradient-to-r from-blue-500 to-purple-600 text-white border-0">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm opacity-90">XP Total</p>
-                <p className="text-2xl font-bold">{user.experience}</p>
-              </div>
-              <Star className="h-8 w-8" />
+          <div className="mt-4">
+            <div className="flex items-center justify-between text-sm mb-2">
+              <span>Progreso del Nivel</span>
+              <span>{user.experience % 1000}/1000 XP</span>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gradient-to-r from-green-500 to-teal-600 text-white border-0">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm opacity-90">Puntos</p>
-                <p className="text-2xl font-bold">{user.experience}</p>
-              </div>
-              <Target className="h-8 w-8" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gradient-to-r from-red-500 to-pink-600 text-white border-0">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm opacity-90">Racha</p>
-                <p className="text-2xl font-bold">{user.streakDays} días</p>
-              </div>
-              <Flame className="h-8 w-8" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            <Progress
+              value={(user.experience % 1000) / 10}
+              className="h-3 bg-white/20"
+            />
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Progreso del nivel */}
@@ -233,15 +212,28 @@ export function StudentDashboard({ user }: StudentDashboardProps) {
                                 {isOverdue && (
                                   <Badge variant="destructive">Vencida</Badge>
                                 )}
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => setSelectedGroup(group)}
-                                  className="bg-green-500 hover:bg-green-600 text-white flex items-center gap-2 px-4 py-2 rounded-md shadow"
+                                <div
+                                  title={
+                                    isOverdue
+                                      ? "Comunícate con el instructor para habilitar la lección"
+                                      : ""
+                                  }
                                 >
-                                  <Play className="h-4 w-4 mr-1" />
-                                  Comenzar
-                                </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setSelectedGroup(group)}
+                                    disabled={isOverdue}
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-md shadow ${
+                                      isOverdue
+                                        ? "bg-red-300 cursor-not-allowed text-red-500 hover:bg-red-400"
+                                        : "bg-green-500 hover:bg-green-600 text-white"
+                                    }`}
+                                  >
+                                    <Play className="h-4 w-4 mr-1" />
+                                    Comenzar
+                                  </Button>
+                                </div>
                               </div>
                             </div>
                             <p className="text-sm text-muted-foreground">
